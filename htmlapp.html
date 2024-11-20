@@ -5,10 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Energy Price Navigator</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
+        }
+        #chart-container {
+            margin-top: 20px;
+            margin-bottom: 40px;
         }
         table {
             width: 100%;
@@ -23,18 +28,10 @@
         th {
             background-color: #f4f4f4;
         }
-        #pagination {
-            margin-top: 20px;
-            text-align: center;
-        }
         button {
             padding: 8px 16px;
             margin: 0 5px;
             cursor: pointer;
-        }
-        #chart-container {
-            margin-top: 20px;
-            margin-bottom: 40px;
         }
     </style>
 </head>
@@ -48,6 +45,7 @@
 <label for="end-date">End Date:</label>
 <input type="date" id="end-date">
 <button onclick="fetchData()">Fetch Data</button>
+<button onclick="resetZoom()">Reset Zoom</button>
 
 <div id="chart-container">
     <canvas id="price-chart"></canvas>
@@ -67,16 +65,8 @@
     </tbody>
 </table>
 
-<div id="pagination">
-    <button onclick="prevPage()">Previous</button>
-    <span id="page-info">Page: 1</span>
-    <button onclick="nextPage()">Next</button>
-</div>
-
 <script>
     let data = [];
-    let currentPage = 1;
-    const pageSize = 10;
     let chart;
 
     // Set default values for date inputs
@@ -115,7 +105,6 @@
             }
             const result = await response.json();
             data = result.data;
-            currentPage = 1;
             updateChart();
             updateTable();
         } catch (error) {
@@ -123,56 +112,11 @@
         }
     }
 
-    function updateTable() {
-        const tableBody = document.querySelector("#data-table tbody");
-        tableBody.innerHTML = ""; // Clear the table
-
-        const startIndex = (currentPage - 1) * pageSize;
-        const endIndex = Math.min(startIndex + pageSize, data.length);
-        const pageData = data.slice(startIndex, endIndex);
-
-        pageData.forEach(entry => {
-            const startTime = new Date(entry.start_timestamp).toLocaleString();
-            const endTime = new Date(entry.end_timestamp).toLocaleString();
-            const marketPriceCtKWh = (entry.marketprice * 0.1).toFixed(2); // Convert EUR/MWh to ct/kWh
-            const row = `
-                <tr>
-                    <td>${startTime}</td>
-                    <td>${endTime}</td>
-                    <td>${marketPriceCtKWh}</td>
-                    <td>ct/kWh</td>
-                </tr>
-            `;
-            tableBody.innerHTML += row;
-        });
-
-        // Update pagination info
-        document.getElementById('page-info').textContent = `Page: ${currentPage}`;
-    }
-
-    function prevPage() {
-        if (currentPage > 1) {
-            currentPage--;
-            updateTable();
-        }
-    }
-
-    function nextPage() {
-        if (currentPage * pageSize < data.length) {
-            currentPage++;
-            updateTable();
-        }
-    }
-
     function updateChart() {
         const labels = data.map(entry =>
             new Date(entry.start_timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         );
-        const tooltips = data.map(entry => ({
-            date: new Date(entry.start_timestamp).toLocaleDateString(),
-            time: new Date(entry.start_timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            price: (entry.marketprice * 0.1).toFixed(2) // Convert EUR/MWh to ct/kWh
-        }));
+        const prices = data.map(entry => (entry.marketprice * 0.1).toFixed(2)); // Convert EUR/MWh to ct/kWh
 
         const ctx = document.getElementById('price-chart').getContext('2d');
 
@@ -187,7 +131,7 @@
                 labels: labels,
                 datasets: [{
                     label: 'Market Price (ct/kWh)',
-                    data: tooltips.map(item => item.price),
+                    data: prices,
                     backgroundColor: 'rgba(54, 162, 235, 0.5)',
                     borderColor: 'rgba(54, 162, 235, 1)',
                     borderWidth: 1
@@ -199,9 +143,29 @@
                     tooltip: {
                         callbacks: {
                             label: function(tooltipItem) {
-                                const tooltip = tooltips[tooltipItem.dataIndex];
-                                return `Date: ${tooltip.date}, Time: ${tooltip.time}, Price: ${tooltip.price} ct/kWh`;
+                                const index = tooltipItem.dataIndex;
+                                const entry = data[index];
+                                const date = new Date(entry.start_timestamp).toLocaleDateString();
+                                const time = new Date(entry.start_timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                                const price = (entry.marketprice * 0.1).toFixed(2);
+                                return `Date: ${date}, Time: ${time}, Price: ${price} ct/kWh`;
                             }
+                        }
+                    },
+                    zoom: {
+                        pan: {
+                            enabled: true,
+                            mode: 'x' // Allow horizontal panning
+                        },
+                        zoom: {
+                            wheel:{
+                                enabled:true
+                            },
+                            drag:{
+                                enabled:true
+                            },
+                            mode: 'x', // Zoom only on the x-axis
+                            threshold: 10 // Minimal drag distance to start zooming
                         }
                     }
                 },
@@ -222,6 +186,32 @@
                 }
             }
         });
+    }
+
+    function updateTable() {
+        const tableBody = document.querySelector("#data-table tbody");
+        tableBody.innerHTML = ""; // Clear the table
+
+        data.forEach(entry => {
+            const startTime = new Date(entry.start_timestamp).toLocaleString();
+            const endTime = new Date(entry.end_timestamp).toLocaleString();
+            const marketPriceCtKWh = (entry.marketprice * 0.1).toFixed(2); // Convert EUR/MWh to ct/kWh
+            const row = `
+                <tr>
+                    <td>${startTime}</td>
+                    <td>${endTime}</td>
+                    <td>${marketPriceCtKWh}</td>
+                    <td>ct/kWh</td>
+                </tr>
+            `;
+            tableBody.innerHTML += row;
+        });
+    }
+
+    function resetZoom() {
+        if (chart) {
+            chart.resetZoom();
+        }
     }
 </script>
 
