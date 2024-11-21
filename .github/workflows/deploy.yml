@@ -6,9 +6,9 @@ on:
   workflow_dispatch: # Allow manual trigger if needed
 
 permissions:
-  contents: write # Grant write permissions for pushing changes
-  id-token: write
-  pages: write
+  contents: write # Allow writing to the repository
+  pages: write # Allow GitHub Pages deployment
+  id-token: write # Allow OpenID Connect for GitHub Pages deployment
 
 jobs:
   update-data:
@@ -16,7 +16,7 @@ jobs:
 
     steps:
       # Checkout the repository
-      - name: Checkout
+      - name: Checkout Repository
         uses: actions/checkout@v4
   
       # Set up Node.js
@@ -25,11 +25,11 @@ jobs:
         with:
           node-version: "16" # Specify your Node.js version
 
-      # Install dependencies (if required)
+      # Install dependencies
       - name: Install Dependencies
         run: npm install
 
-      # Run the pre-fetching script to fetch Austrian and German prices
+      # Run the prefetching script to fetch Austrian and German prices
       - name: Fetch and Update Cached Data
         run: node prefetch.js
 
@@ -47,11 +47,14 @@ jobs:
       # Deploy updated data to GitHub Pages
       - name: Setup Pages
         uses: actions/configure-pages@v5
-      - name: Upload artifact
+
+      - name: Upload Selected Files
         uses: actions/upload-pages-artifact@v3
         with:
-          # Upload entire repository
-          path: '.'
+          path: |
+            index.html
+            cached-data-austria.json
+            cached-data-germany.json # Include only the required files
+
       - name: Deploy to GitHub Pages
-        id: deployment
         uses: actions/deploy-pages@v4
