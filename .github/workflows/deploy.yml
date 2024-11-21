@@ -21,8 +21,8 @@ jobs:
           node-version: "16" # Specify your Node.js version
 
       # Install dependencies (if any)
-      # - name: Install Dependencies
-      #   run: npm install
+      - name: Install Dependencies
+        run: npm install
 
       # Run the pre-fetching script
       - name: Fetch and Update Cached Data

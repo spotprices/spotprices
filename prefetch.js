@@ -1,5 +1,5 @@
-const fetch = require('node-fetch');
-const fs = require('fs');
+import fetch from 'node-fetch';
+import fs from 'fs';
 
 const COUNTRY_API = "https://api.awattar.at"; // Change to Germany's API for German data
 const MILLISECONDS_IN_A_DAY = 86400000;
