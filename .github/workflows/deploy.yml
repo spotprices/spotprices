@@ -33,17 +33,6 @@ jobs:
       - name: Fetch and Update Cached Data
         run: node prefetch.js
 
-      # Commit and push the updated cached data files
-      - name: Commit and Push Changes
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add cached-data-austria.json cached-data-germany.json
-          git commit -m "Update cached data (daily run)" || exit 0
-          git push origin HEAD
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       # Deploy updated data to GitHub Pages
       - name: Setup Pages
         uses: actions/configure-pages@v5
