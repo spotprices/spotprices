@@ -20,8 +20,8 @@ async function fetchAndSaveDataForCountry(country) {
         if (!response.ok) throw new Error(`Failed to fetch data for ${country.name}: ${response.statusText}`);
         const result = await response.json();
 
-        fs.writeFileSync(country.output, JSON.stringify(result.data, null, 2));
-        console.log(`Data successfully saved to ${country.output} for ${country.name}!`);
+        fs.writeFileSync("page/" + country.output, JSON.stringify(result.data, null, 2));
+        console.log(`Data successfully saved to page/${country.output} for ${country.name}!`);
     } catch (error) {
         console.error(`Error fetching data for ${country.name}: ${error.message}`);
     }
