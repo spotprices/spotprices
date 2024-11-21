@@ -29,7 +29,7 @@ jobs:
 
       # Run the pre-fetching script to fetch Austrian and German prices
       - name: Fetch and Update Cached Data
-        run: node fetch-data.js
+        run: node prefetch.js
 
       # Commit and push the updated cached data files
       - name: Commit and Push Changes
