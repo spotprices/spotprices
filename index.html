@@ -66,7 +66,13 @@ SOFTWARE.
 -->
 
 <h1>Energy Price Navigator</h1>
-<p>Select a start and end date to fetch the energy price data within a range:</p>
+<p>Select a country, a start and end date to fetch the energy price data within a range:</p>
+
+<label for="country">Country:</label>
+<select id="country">
+    <option value="https://api.awattar.at">Austria</option>
+    <option value="https://api.awattar.de">Germany</option>
+</select>
 
 <label for="start-date">Start Date:</label>
 <input type="date" id="start-date">
@@ -81,15 +87,15 @@ SOFTWARE.
 
 <table id="data-table">
     <thead>
-        <tr>
-            <th>Start Time</th>
-            <th>End Time</th>
-            <th>Market Price (ct/kWh)</th>
-            <th>Unit</th>
-        </tr>
+    <tr>
+        <th>Start Time</th>
+        <th>End Time</th>
+        <th>Market Price (ct/kWh)</th>
+        <th>Unit</th>
+    </tr>
     </thead>
     <tbody>
-        <!-- Data will be dynamically inserted here -->
+    <!-- Data will be dynamically inserted here -->
     </tbody>
 </table>
 
@@ -100,144 +106,145 @@ SOFTWARE.
 </div>
 
 <script>
-    let data = [];
-    let chart;
-    let currentPage = 1;
-    const rowsPerPage = 50;
+  let data = [];
+  let chart;
+  let currentPage = 1;
+  const rowsPerPage = 50;
 
-    // Set default values for date inputs
-    window.onload = () => {
-        const today = new Date();
-        const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+  // Set default values for date inputs
+  window.onload = () => {
+    const today = new Date();
+    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
 
-        document.getElementById('start-date').value = firstDayOfMonth.toISOString().split('T')[0];
-        document.getElementById('end-date').value = today.toISOString().split('T')[0];
-    };
+    document.getElementById('start-date').value = firstDayOfMonth.toISOString().split('T')[0];
+    document.getElementById('end-date').value = today.toISOString().split('T')[0];
+  };
 
-    async function fetchData() {
-        const startDate = document.getElementById('start-date').value;
-        const endDate = document.getElementById('end-date').value;
+  async function fetchData() {
+    const startDate = document.getElementById('start-date').value;
+    const endDate = document.getElementById('end-date').value;
+    const country = document.getElementById('country').value; // Get selected country API URL
 
-        if (!startDate || !endDate) {
-            alert("Please select both a start and end date.");
-            return;
-        }
-
-        // Convert the selected dates to Unix timestamps in milliseconds
-        const startTimestamp = new Date(startDate).getTime();
-        const endTimestamp = new Date(endDate).getTime();
-
-        if (endTimestamp <= startTimestamp) {
-            alert("The end date must be after the start date.");
-            return;
-        }
-
-        const url = `https://api.awattar.at/v1/marketdata?start=${startTimestamp}&end=${endTimestamp}`;
-
-        try {
-            const response = await fetch(url);
-            if (!response.ok) {
-                throw new Error(`Failed to fetch data: ${response.statusText}`);
-            }
-            const result = await response.json();
-            data = result.data;
-            currentPage = 1;
-            updateChart();
-            updateTable();
-        } catch (error) {
-            alert(`Error: ${error.message}`);
-        }
+    if (!startDate || !endDate) {
+      alert("Please select both a start and end date.");
+      return;
     }
 
-    function updateChart() {
-        const labels = data.map(entry =>
-            new Date(entry.start_timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        );
-        const prices = data.map(entry => (entry.marketprice * 0.1).toFixed(2)); // Convert EUR/MWh to ct/kWh
+    // Convert the selected dates to Unix timestamps in milliseconds
+    const startTimestamp = new Date(startDate).getTime();
+    const endTimestamp = new Date(endDate).getTime();
 
-        const ctx = document.getElementById('price-chart').getContext('2d');
+    if (endTimestamp <= startTimestamp) {
+      alert("The end date must be after the start date.");
+      return;
+    }
 
-        // Destroy existing chart instance if it exists
-        if (chart) {
-            chart.destroy();
-        }
+    const url = `${country}/v1/marketdata?start=${startTimestamp}&end=${endTimestamp}`;
 
-        chart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Market Price (ct/kWh)',
-                    data: prices,
-                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
-                    borderColor: 'rgba(54, 162, 235, 1)',
-                    borderWidth: 1
-                }]
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch data: ${response.statusText}`);
+      }
+      const result = await response.json();
+      data = result.data;
+      currentPage = 1;
+      updateChart();
+      updateTable();
+    } catch (error) {
+      alert(`Error: ${error.message}`);
+    }
+  }
+
+  function updateChart() {
+    const labels = data.map(entry =>
+      new Date(entry.start_timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    );
+    const prices = data.map(entry => (entry.marketprice * 0.1).toFixed(2)); // Convert EUR/MWh to ct/kWh
+
+    const ctx = document.getElementById('price-chart').getContext('2d');
+
+    // Destroy existing chart instance if it exists
+    if (chart) {
+      chart.destroy();
+    }
+
+    chart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Market Price (ct/kWh)',
+          data: prices,
+          backgroundColor: 'rgba(54, 162, 235, 0.5)',
+          borderColor: 'rgba(54, 162, 235, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: function(tooltipItem) {
+                const index = tooltipItem.dataIndex;
+                const entry = data[index];
+                const date = new Date(entry.start_timestamp).toLocaleDateString();
+                const time = new Date(entry.start_timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const price = (entry.marketprice * 0.1).toFixed(2);
+                return `Date: ${date}, Time: ${time}, Price: ${price} ct/kWh`;
+              }
+            }
+          },
+          zoom: {
+            pan: {
+              enabled: true,
+              mode: 'x' // Allow horizontal panning
             },
-            options: {
-                responsive: true,
-                plugins: {
-                    tooltip: {
-                        callbacks: {
-                            label: function(tooltipItem) {
-                                const index = tooltipItem.dataIndex;
-                                const entry = data[index];
-                                const date = new Date(entry.start_timestamp).toLocaleDateString();
-                                const time = new Date(entry.start_timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                                const price = (entry.marketprice * 0.1).toFixed(2);
-                                return `Date: ${date}, Time: ${time}, Price: ${price} ct/kWh`;
-                            }
-                        }
-                    },
-                    zoom: {
-                        pan: {
-                            enabled: true,
-                            mode: 'x' // Allow horizontal panning
-                        },
-                        zoom: {
-                            wheel:{
-                                enabled:true
-                            },
-                            drag:{
-                                enabled:true
-                            },
-                            mode: 'x', // Zoom only on the x-axis
-                            threshold: 10 // Minimal drag distance to start zooming
-                        }
-                    }
-                },
-                scales: {
-                    x: {
-                        title: {
-                            display: true,
-                            text: 'Time'
-                        }
-                    },
-                    y: {
-                        title: {
-                            display: true,
-                            text: 'Market Price (ct/kWh)'
-                        },
-                        beginAtZero: true
-                    }
-                }
+            zoom: {
+              wheel:{
+                enabled:true
+              },
+              drag:{
+                enabled:true
+              },
+              mode: 'x', // Zoom only on the x-axis
+              threshold: 10 // Minimal drag distance to start zooming
             }
-        });
-    }
+          }
+        },
+        scales: {
+          x: {
+            title: {
+              display: true,
+              text: 'Time'
+            }
+          },
+          y: {
+            title: {
+              display: true,
+              text: 'Market Price (ct/kWh)'
+            },
+            beginAtZero: true
+          }
+        }
+      }
+    });
+  }
 
-    function updateTable() {
-        const tableBody = document.querySelector("#data-table tbody");
-        tableBody.innerHTML = ""; // Clear the table
+  function updateTable() {
+    const tableBody = document.querySelector("#data-table tbody");
+    tableBody.innerHTML = ""; // Clear the table
 
-        const startIndex = (currentPage - 1) * rowsPerPage;
-        const endIndex = Math.min(startIndex + rowsPerPage, data.length);
-        const pageData = data.slice(startIndex, endIndex);
+    const startIndex = (currentPage - 1) * rowsPerPage;
+    const endIndex = Math.min(startIndex + rowsPerPage, data.length);
+    const pageData = data.slice(startIndex, endIndex);
 
-        pageData.forEach(entry => {
-            const startTime = new Date(entry.start_timestamp).toLocaleString();
-            const endTime = new Date(entry.end_timestamp).toLocaleString();
-            const marketPriceCtKWh = (entry.marketprice * 0.1).toFixed(2); // Convert EUR/MWh to ct/kWh
-            const row = `
+    pageData.forEach(entry => {
+      const startTime = new Date(entry.start_timestamp).toLocaleString();
+      const endTime = new Date(entry.end_timestamp).toLocaleString();
+      const marketPriceCtKWh = (entry.marketprice * 0.1).toFixed(2); // Convert EUR/MWh to ct/kWh
+      const row = `
                 <tr>
                     <td>${startTime}</td>
                     <td>${endTime}</td>
@@ -245,32 +252,32 @@ SOFTWARE.
                     <td>ct/kWh</td>
                 </tr>
             `;
-            tableBody.innerHTML += row;
-        });
+      tableBody.innerHTML += row;
+    });
 
-        // Update pagination info
-        document.getElementById('page-info').textContent = `Page: ${currentPage}`;
-    }
+    // Update pagination info
+    document.getElementById('page-info').textContent = `Page: ${currentPage}`;
+  }
 
-    function prevPage() {
-        if (currentPage > 1) {
-            currentPage--;
-            updateTable();
-        }
+  function prevPage() {
+    if (currentPage > 1) {
+      currentPage--;
+      updateTable();
     }
+  }
 
-    function nextPage() {
-        if (currentPage * rowsPerPage < data.length) {
-            currentPage++;
-            updateTable();
-        }
+  function nextPage() {
+    if (currentPage * rowsPerPage < data.length) {
+      currentPage++;
+      updateTable();
     }
+  }
 
-    function resetZoom() {
-        if (chart) {
-            chart.resetZoom();
-        }
+  function resetZoom() {
+    if (chart) {
+      chart.resetZoom();
     }
+  }
 </script>
 
 </body>
