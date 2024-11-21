@@ -202,11 +202,14 @@ SOFTWARE.
               mode: 'x' // Allow horizontal panning
             },
             zoom: {
-              wheel:{
-                enabled:true
+              wheel: {
+                enabled: true // Enable zooming with the mouse wheel
               },
-              drag:{
-                enabled:true
+              drag: {
+                enabled: true // Enable drag-to-zoom
+              },
+              pinch: {
+                enabled: true // Enable pinch-to-zoom
               },
               mode: 'x', // Zoom only on the x-axis
               threshold: 10 // Minimal drag distance to start zooming
