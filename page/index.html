@@ -106,28 +106,19 @@ SOFTWARE.
 </div>
 
 <script>
-    let cachedData = { Austria: [], Germany: [] };
+    let cachedData = {};
     let data = [];
     let chart;
     let currentPage = 1;
     const rowsPerPage = 50;
 
-    // Load cached data on startup
-    window.onload = async () => {
-        try {
-            const austriaResponse = await fetch("cached-data-austria.json");
-            const germanyResponse = await fetch("cached-data-germany.json");
-            cachedData.Austria = await austriaResponse.json();
-            cachedData.Germany = await germanyResponse.json();
+    // Set default values for date inputs
+    window.onload = () => {
+        const today = new Date();
+        const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
 
-            const today = new Date();
-            const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-
-            document.getElementById('start-date').value = firstDayOfMonth.toISOString().split('T')[0];
-            document.getElementById('end-date').value = today.toISOString().split('T')[0];
-        } catch (error) {
-            console.error("Error loading cached data:", error);
-        }
+        document.getElementById('start-date').value = firstDayOfMonth.toISOString().split('T')[0];
+        document.getElementById('end-date').value = today.toISOString().split('T')[0];
     };
 
     async function fetchData() {
@@ -137,6 +128,21 @@ SOFTWARE.
 
         const startTimestamp = new Date(startDate).getTime();
         const endTimestamp = new Date(endDate).getTime();
+
+        // Check if cached data for the selected country is already loaded
+        if (!cachedData[country]) {
+            console.log(`Loading cached data for ${country}...`);
+            try {
+                const cachedFile = country === "Austria" ? "cached-data-austria.json" : "cached-data-germany.json";
+                const response = await fetch(cachedFile);
+                cachedData[country] = await response.json();
+                console.log(`Cached data for ${country} loaded.`);
+            } catch (error) {
+                console.error(`Error loading cached data for ${country}:`, error);
+                alert("Error loading cached data. Please try again later.");
+                return;
+            }
+        }
 
         // Filter data from cached data
         const cachedResults = cachedData[country].filter(entry =>
