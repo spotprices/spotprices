@@ -14,9 +14,9 @@ jobs:
 
     steps:
       # Checkout the repository
-      - name: Checkout Repository
-        uses: actions/checkout@v3
-
+      - name: Checkout
+        uses: actions/checkout@v4
+  
       # Set up Node.js
       - name: Set up Node.js
         uses: actions/setup-node@v3
@@ -43,8 +43,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # Deploy updated data to GitHub Pages
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./ # Deploy the root directory
+          # Upload entire repository
+          path: '.'
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
