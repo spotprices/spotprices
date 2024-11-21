@@ -5,6 +5,9 @@ on:
     - cron: "0 14 * * *" # Run daily at 14:00 UTC
   workflow_dispatch: # Allow manual trigger if needed
 
+permissions:
+  contents: write # Grant write permissions for pushing changes
+
 jobs:
   update-data:
     runs-on: ubuntu-latest
@@ -20,26 +23,28 @@ jobs:
         with:
           node-version: "16" # Specify your Node.js version
 
-      # Install dependencies (if any)
+      # Install dependencies (if required)
       - name: Install Dependencies
         run: npm install
 
-      # Run the pre-fetching script
+      # Run the pre-fetching script to fetch Austrian and German prices
       - name: Fetch and Update Cached Data
-        run: node prefetch.js
+        run: node fetch-data.js
 
-      # Commit and push the updated `cached-data.json` to the repository
+      # Commit and push the updated cached data files
       - name: Commit and Push Changes
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add .
-          git commit -m "Update cached data (daily run)"
+          git add cached-data-austria.json cached-data-germany.json
+          git commit -m "Update cached data (daily run)" || exit 0
           git push origin HEAD
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # Deploy to GitHub Pages
+      # Deploy updated data to GitHub Pages
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./ # Publish the root directory
+          publish_dir: ./ # Deploy the root directory
