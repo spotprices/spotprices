@@ -26,7 +26,7 @@ jobs:
 
       # Run the pre-fetching script
       - name: Fetch and Update Cached Data
-        run: node fetch-data.js
+        run: node prefetch.js
 
       # Commit and push the updated `cached-data.json` to the repository
       - name: Commit and Push Changes
