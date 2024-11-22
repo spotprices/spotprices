@@ -14,6 +14,13 @@
         #chart-container {
             margin-top: 20px;
             margin-bottom: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        canvas {
+            max-width: 100%;
+            height: auto;
         }
         table {
             width: 100%;
@@ -118,7 +125,18 @@ SOFTWARE.
 
         document.getElementById('start-date').value = firstDayOfMonth.toISOString().split('T')[0];
         document.getElementById('end-date').value = today.toISOString().split('T')[0];
+
+        // Adjust chart container height to fit the viewport
+        adjustChartHeight();
     };
+
+    function adjustChartHeight() {
+        const viewportHeight = window.innerHeight;
+        const headerHeight = document.querySelector("h1").offsetHeight;
+        const controlsHeight = document.querySelector("p").offsetHeight + 40; // Approximate height of controls
+        const availableHeight = viewportHeight - headerHeight - controlsHeight - 100; // Margin for table and spacing
+        document.getElementById('chart-container').style.height = `${availableHeight}px`;
+    }
 
     async function fetchData() {
         const startDate = document.getElementById('start-date').value;
@@ -217,6 +235,7 @@ SOFTWARE.
             },
             options: {
                 responsive: true,
+                maintainAspectRatio: false,
                 plugins: {
                     tooltip: {
                         callbacks: {
@@ -296,6 +315,9 @@ SOFTWARE.
             chart.resetZoom();
         }
     }
+
+    // Adjust chart height on window resize
+    window.addEventListener('resize', adjustChartHeight);
 </script>
 
 </body>
