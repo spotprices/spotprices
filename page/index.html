@@ -44,6 +44,17 @@
             margin-top: 20px;
             text-align: center;
         }
+        footer {
+            margin-top: 40px;
+            text-align: center;
+        }
+        footer a {
+            text-decoration: none;
+            color: blue;
+        }
+        footer a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -213,6 +224,12 @@ SOFTWARE.
             new Date(entry.start_timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })
         );
         const prices = data.map(entry => (entry.marketprice * 0.1).toFixed(2)); // Convert EUR/MWh to ct/kWh
+        const currentHour = new Date().getHours();
+
+        const backgroundColors = data.map(entry => {
+            const entryHour = new Date(entry.start_timestamp).getHours();
+            return entryHour === currentHour ? 'rgba(255, 99, 132, 0.5)' : 'rgba(54, 162, 235, 0.5)';
+        });
 
         const ctx = document.getElementById('price-chart').getContext('2d');
 
@@ -228,7 +245,7 @@ SOFTWARE.
                 datasets: [{
                     label: `Market Price (${document.getElementById('country').value}) (ct/kWh)`, // Dynamic label
                     data: prices,
-                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                    backgroundColor: backgroundColors,
                     borderColor: 'rgba(54, 162, 235, 1)',
                     borderWidth: 1
                 }]
