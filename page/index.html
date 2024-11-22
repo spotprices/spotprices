@@ -152,6 +152,11 @@ SOFTWARE.
             entry.start_timestamp >= startTimestamp && entry.end_timestamp <= endTimestamp
         );
 
+        if (cachedResults.length === 0 && cachedData[country].length > 0) {
+            alert("No data available for the selected date range.");
+            return;
+        }
+
         if (cachedResults.length > 0) {
             console.log(`Data loaded from cache for ${country}.`);
             data = cachedResults;
@@ -162,7 +167,7 @@ SOFTWARE.
         }
 
         // If not fully in cache, fetch from API
-        console.log(`Fetching data from API for ${country}...`);
+        console.log(`Fetching API data for ${country} from ${new Date(startTimestamp).toISOString()} to ${new Date(endTimestamp).toISOString()}...`);
         const apiURL = country === "Austria" ? "https://api.awattar.at" : "https://api.awattar.de";
         const url = `${apiURL}/v1/marketdata?start=${startTimestamp}&end=${endTimestamp}`;
 
@@ -203,7 +208,7 @@ SOFTWARE.
             data: {
                 labels: labels,
                 datasets: [{
-                    label: 'Market Price (ct/kWh)',
+                    label: `Market Price (${document.getElementById('country').value}) (ct/kWh)`, // Dynamic label
                     data: prices,
                     backgroundColor: 'rgba(54, 162, 235, 0.5)',
                     borderColor: 'rgba(54, 162, 235, 1)',
