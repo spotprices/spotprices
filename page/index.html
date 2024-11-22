@@ -134,12 +134,16 @@ SOFTWARE.
             try {
                 const cachedFile = country === "Austria" ? "page/cached-data-austria.json" : "page/cached-data-germany.json";
                 const response = await fetch(cachedFile);
-                cachedData[country] = await response.json();
-                console.log(`Cached data for ${country} loaded.`);
+                if (response.ok) {
+                    cachedData[country] = (await response.json()).map(({ unit, ...rest }) => rest); // Remove 'unit' if it exists
+                    console.log(`Cached data for ${country} loaded.`);
+                } else {
+                    cachedData[country] = [];
+                    console.warn(`No cached data found for ${country}.`);
+                }
             } catch (error) {
                 console.error(`Error loading cached data for ${country}:`, error);
-                alert("Error loading cached data. Please try again later.");
-                return;
+                cachedData[country] = [];
             }
         }
 
@@ -166,7 +170,13 @@ SOFTWARE.
             const response = await fetch(url);
             if (!response.ok) throw new Error(`Failed to fetch data: ${response.statusText}`);
             const result = await response.json();
-            data = result.data.map(({ unit, ...rest }) => rest); // Remove 'unit'
+            const fetchedData = result.data.map(({ unit, ...rest }) => rest); // Remove 'unit' if it exists
+
+            // Update cache with the new data
+            cachedData[country] = [...cachedData[country], ...fetchedData];
+
+            // Use fetched data for the chart and table
+            data = fetchedData;
             currentPage = 1;
             updateChart();
             updateTable();

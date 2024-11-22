@@ -60,8 +60,7 @@ async function fetchAndSaveDataForCountry(country) {
 
     if (newStartTimestamp >= endDate.getTime()) {
         console.log(`No new data to fetch for ${country.name}.`);
-        const minimalizedData = existingData.map(({ unit, ...rest }) => rest);
-        fs.writeFileSync(country.output, JSON.stringify(minimalizedData));
+        fs.writeFileSync(country.output, JSON.stringify(existingData));
         return;
     }
 
@@ -73,8 +72,8 @@ async function fetchAndSaveDataForCountry(country) {
         if (!response.ok) throw new Error(`Failed to fetch data for ${country.name}: ${response.statusText}`);
         const result = await response.json();
 
-        // Merge existing data with the new data and remove the "unit" field
-        const mergedData = [...existingData, ...result.data].map(({ unit, ...rest }) => rest);
+        // Merge existing data with the new data
+        const mergedData = [...existingData, ...result.data].map(({ unit, ...rest }) => rest); // Remove 'unit' if it exists
 
         // Save the merged data in a minimalized format
         fs.writeFileSync(country.output, JSON.stringify(mergedData));
