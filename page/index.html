@@ -132,7 +132,7 @@ SOFTWARE.
         if (!cachedData[country]) {
             console.log(`Loading cached data for ${country}...`);
             try {
-                const cachedFile = country === "Austria" ? "page/cached-data-austria.json" : "page/cached-data-germany.json";
+                const cachedFile = country === "Austria" ? "cached-data-austria.json" : "cached-data-germany.json";
                 const response = await fetch(cachedFile);
                 if (response.ok) {
                     cachedData[country] = (await response.json()).map(({ unit, ...rest }) => rest); // Remove 'unit' if it exists
