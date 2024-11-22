@@ -225,13 +225,25 @@ SOFTWARE.
             new Date(entry.start_timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })
         );
         const prices = data.map(entry => (entry.marketprice * 0.1).toFixed(2)); // Convert EUR/MWh to ct/kWh
-        const currentHour = new Date().getHours();
+        const today = new Date();
+        const currentHour = today.getHours();
+        const currentDay = today.getDate(); // Use getDate() for the day of the month
+        const currentMonth = today.getMonth(); // Zero-based (0 = January, 11 = December)
+        const currentYear = today.getFullYear();
 
         const backgroundColors = data.map(entry => {
-            const entryHour = new Date(entry.start_timestamp).getHours();
-            return entryHour === currentHour ? 'rgba(255, 99, 132, 0.5)' : 'rgba(54, 162, 235, 0.5)';
-        });
+            const entryDate = new Date(entry.start_timestamp);
+            const entryHour = entryDate.getHours();
+            const entryDay = entryDate.getDate();
+            const entryMonth = entryDate.getMonth();
+            const entryYear = entryDate.getFullYear();
 
+            // Check if the hour, day, month, and year all match
+            if (entryHour === currentHour && entryDay === currentDay && entryMonth === currentMonth && entryYear === currentYear) {
+                return 'rgba(255, 99, 132, 0.5)'; // Highlight color
+            }
+            return 'rgba(54, 162, 235, 0.5)'; // Default color
+        });
         const ctx = document.getElementById('price-chart').getContext('2d');
 
         // Destroy existing chart instance if it exists
