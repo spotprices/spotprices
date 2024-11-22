@@ -192,7 +192,7 @@ SOFTWARE.
 
     function updateChart() {
         const labels = data.map(entry =>
-            new Date(entry.start_timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            new Date(entry.start_timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })
         );
         const prices = data.map(entry => (entry.marketprice * 0.1).toFixed(2)); // Convert EUR/MWh to ct/kWh
 
@@ -224,7 +224,7 @@ SOFTWARE.
                                 const index = tooltipItem.dataIndex;
                                 const entry = data[index];
                                 const date = new Date(entry.start_timestamp).toLocaleDateString();
-                                const time = new Date(entry.start_timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                                const time = new Date(entry.start_timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
                                 const price = (entry.marketprice * 0.1).toFixed(2);
                                 return `Date: ${date}, Time: ${time}, Price: ${price} ct/kWh`;
                             }
@@ -260,8 +260,8 @@ SOFTWARE.
         const pageData = data.slice(startIndex, endIndex);
 
         pageData.forEach(entry => {
-            const startTime = new Date(entry.start_timestamp).toLocaleString();
-            const endTime = new Date(entry.end_timestamp).toLocaleString();
+            const startTime = new Date(entry.start_timestamp).toLocaleString('en-GB', { hour12: false });
+            const endTime = new Date(entry.end_timestamp).toLocaleString('en-GB', { hour12: false });
             const marketPriceCtKWh = (entry.marketprice * 0.1).toFixed(2); // Convert EUR/MWh to ct/kWh
             const row = `
                 <tr>
