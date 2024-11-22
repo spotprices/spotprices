@@ -155,7 +155,9 @@ SOFTWARE.
         const country = document.getElementById('country').value;
 
         const startTimestamp = new Date(startDate).getTime();
-        const endTimestamp = new Date(endDate).getTime();
+
+        // Adjust endTimestamp to include the entire day and add 1 extra second
+        const endTimestamp = new Date(new Date(endDate).setHours(23, 59, 59, 999)).getTime() + 1000;
 
         // Check if cached data for the selected country is already loaded
         if (!cachedData[country]) {
@@ -218,7 +220,6 @@ SOFTWARE.
             alert(`Error: ${error.message}`);
         }
     }
-
     function updateChart() {
         const labels = data.map(entry =>
             new Date(entry.start_timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })
