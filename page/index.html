@@ -86,12 +86,30 @@ SOFTWARE.
 -->
 
 <h1>Energy Price Navigator</h1>
-<p>Select a country, a start and end date to fetch the energy price data within a range:</p>
+<p>Select a country, region, and a date range to fetch the energy price data:</p>
 
 <label for="country">Country:</label>
 <select id="country">
     <option value="Austria">Austria</option>
     <option value="Germany">Germany</option>
+</select>
+
+<label for="region">Region:</label>
+<select id="region" onchange="updatePricesWithGridFee()">
+    <option value="0">None</option>
+    <option value="10.87">Steiermark</option>
+    <option value="10.01">Niederösterreich</option>
+    <option value="9.46">Wien</option>
+    <option value="8.15">Oberösterreich</option>
+    <option value="8.62">Burgenland</option>
+    <option value="11.77">Kärnten</option>
+    <option value="7.06">Vorarlberg</option>
+    <option value="9.33">Salzburg</option>
+    <option value="7.85">Tirol</option>
+    <option value="9.37">Klagenfurt</option>
+    <option value="7.06">Linz</option>
+    <option value="10.03">Innsbruck</option>
+    <option value="7.48">Graz</option>
 </select>
 
 <label for="start-date">Start Date:</label>
@@ -194,7 +212,7 @@ SOFTWARE.
             console.log(`Data loaded from cache for ${country}.`);
             data = cachedResults;
             currentPage = 1;
-            updateChart();
+            updatePricesWithGridFee();
             updateTable();
             return;
         }
@@ -216,13 +234,17 @@ SOFTWARE.
             // Use fetched data for the chart and table
             data = fetchedData;
             currentPage = 1;
-            updateChart();
+            updatePricesWithGridFee();
             updateTable();
         } catch (error) {
             alert(`Error: ${error.message}`);
         }
     }
-    function updateChart() {
+
+    function updatePricesWithGridFee() {
+        const regionFee = parseFloat(document.getElementById('region').value);
+        const adjustedPrices = data.map(entry => ((entry.marketprice * 0.1) + regionFee).toFixed(2));
+
         const labels = data.map(entry =>
             new Date(entry.start_timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })
         );
@@ -258,8 +280,8 @@ SOFTWARE.
             data: {
                 labels: labels,
                 datasets: [{
-                    label: `Market Price (${document.getElementById('country').value}) (ct/kWh)`, // Dynamic label
-                    data: prices,
+                    label: `Market Price (including grid fee: ${regionFee.toFixed(2)} ct/kWh)`,
+                    data: adjustedPrices,
                     backgroundColor: backgroundColors,
                     borderColor: 'rgba(54, 162, 235, 1)',
                     borderWidth: 1
@@ -276,8 +298,8 @@ SOFTWARE.
                                 const entry = data[index];
                                 const date = new Date(entry.start_timestamp).toLocaleDateString();
                                 const time = new Date(entry.start_timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
-                                const price = (entry.marketprice * 0.1).toFixed(2);
-                                return `Date: ${date}, Time: ${time}, Price: ${price} ct/kWh`;
+                                const adjustedPrice = adjustedPrices[index];
+                                return `Date: ${date}, Time: ${time}, Price: ${adjustedPrice} ct/kWh (incl. grid fee)`;
                             }
                         }
                     },
