@@ -112,6 +112,13 @@ SOFTWARE.
     <option value="7.48">Graz</option>
 </select>
 
+<label for="provider">Electricity Provider:</label>
+<select id="provider" onchange="fetchData()">
+    <option value="none">None</option>
+    <option value="awattar">aWATTar (1.5 ct + 3% of market price)</option>
+    <option value="smartenergy">SmartEnergy (1.2 ct)</option>
+</select>
+
 <label for="start-date">Start Date:</label>
 <input type="date" id="start-date">
 <label for="end-date">End Date:</label>
@@ -244,11 +251,24 @@ SOFTWARE.
     function updatePricesWithGridFee() {
         const elektrizitatsabgabePerKWh = 0.1;
         const regionFee = parseFloat(document.getElementById('region').value);
+        const provider = document.getElementById('provider').value;
         const marketPrices = data.map(entry => (entry.marketprice * 0.1).toFixed(2)); // Convert EUR/MWh to ct/kWh
         const gridFees = data.map(() => regionFee.toFixed(2)); // Constant grid fee for all entries
         const elektrizitatsabgabe = data.map(() => elektrizitatsabgabePerKWh.toFixed(2)); // Fixed value per kWh
-        const totalPrices = marketPrices.map((marketPrice) =>
-            (parseFloat(marketPrice) + regionFee + elektrizitatsabgabePerKWh)*1.2
+        // Calculate provider-specific fees
+        const providerFees = marketPrices.map(marketPrice => {
+            switch (provider) {
+                case 'awattar':
+                    return (parseFloat(marketPrice) * 0.03 + 1.5).toFixed(2); // 3% of market price + 1.5 ct
+                case 'smartenergy':
+                    return 1.2.toFixed(2); // Fixed 1.2 ct
+                default:
+                    return 0.0.toFixed(2); // No provider fee
+            }
+        });
+
+        const totalPrices = marketPrices.map((marketPrice, index) =>
+            (parseFloat(marketPrice) + regionFee + elektrizitatsabgabePerKWh+parseFloat(providerFees[index]))*1.2
         );
         const tax = totalPrices.map((totalPrice) => totalPrice/6.0 );
 
@@ -309,6 +329,13 @@ SOFTWARE.
                         borderWidth: 1
                     },
                     {
+                        label: 'Provider Fee (ct/kWh)',
+                        data: providerFees,
+                        backgroundColor: 'rgba(153, 102, 255, 0.5)', // Provider fee color
+                        borderColor: 'rgba(153, 102, 255, 1)',
+                        borderWidth: 1
+                    },
+                    {
                         label: 'Tax',
                         data: tax,
                         backgroundColor: 'rgba(75, 192, 192, 0.5)', // tax color
@@ -330,7 +357,7 @@ SOFTWARE.
                                 const time = new Date(entry.start_timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
                                 const price = (totalPrices[index]).toFixed(2);
                                 const marketPrice = (marketPrices[index]);
-                                return `Date: ${date}, Time: ${time}, Price: ${price} ct/kWh, Marketprice: ${marketPrice} ct/kWh`;
+                                return `Date: ${date}, Time: ${time}, Price: ${price} ct/kWh, Marketprice: ${marketPrice} ct/kWh, provider: ${providerFees[index]} ct/kWh`;
                             }
                             
                         }
