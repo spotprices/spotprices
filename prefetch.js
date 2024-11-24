@@ -26,11 +26,11 @@ if (now.getHours() >= 14) {
 endDate = new Date(endDate.getTime() + 2 * 60 * 1000);
 
 // Start date is 5 years before today
-const startDate = new Date(new Date().setFullYear(now.getFullYear() - 5));
+const startDate = new Date(new Date().setFullYear(now.getFullYear() - 20));
 
 const COUNTRIES = [
-    { name: "Austria", api: "https://api.awattar.at", cachedUrl: "https://reinsch82.github.io/spotprices/cached-data-austria.json", output: path.join(outputDir, "cached-data-austria.json") },
-    { name: "Germany", api: "https://api.awattar.de", cachedUrl: "https://reinsch82.github.io/spotprices/cached-data-germany.json", output: path.join(outputDir, "cached-data-germany.json") },
+    { name: "Austria", api: "https://api.awattar.at", cachedUrl: "https://reinsch82.github.io/spotprices/cached-dataaustria.json", output: path.join(outputDir, "cached-data-austria.json") },
+    { name: "Germany", api: "https://api.awattar.de", cachedUrl: "https://reinsch82.github.io/spotprices/cached-datagermany.json", output: path.join(outputDir, "cached-data-germany.json") },
 ];
 
 async function fetchExistingData(country) {
