@@ -329,7 +329,8 @@ SOFTWARE.
                                 const date = new Date(entry.start_timestamp).toLocaleDateString();
                                 const time = new Date(entry.start_timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
                                 const price = (totalPrices[index]).toFixed(2);
-                                return `Date: ${date}, Time: ${time}, Price: ${price} ct/kWh`;
+                                const marketPrice = (marketPrices[index]);
+                                return `Date: ${date}, Time: ${time}, Price: ${price} ct/kWh, Marketprice: ${marketPrice} ct/kWh`;
                             }
                             
                         }
