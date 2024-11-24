@@ -1,6 +1,10 @@
 import fetch from 'node-fetch';
 import fs from 'fs';
 import path from 'path';
+import { DateTime } from 'luxon';
+
+// Define CET timezone
+const CET = 'Europe/Berlin';
 
 // Determine the output directory
 const outputDir = path.resolve('page');
@@ -11,22 +15,22 @@ if (!fs.existsSync(outputDir)) {
     console.log(`Created directory: ${outputDir}`);
 }
 
-// Determine the end date based on the current time
-const now = new Date();
-let endDate;
+// Determine the end date based on the current time in CET
+const nowCET = DateTime.now().setZone(CET);
+let endDateCET;
 
-// Use the end of the following day if after 14:00, otherwise use the end of today
-if (now.getHours() >= 14) {
-    endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 23, 59, 59, 999);
+// Use the end of the following day if after 14:00 CET, otherwise use the end of today
+if (nowCET.hour >= 14) {
+    endDateCET = nowCET.plus({ days: 1 }).endOf('day');
 } else {
-    endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+    endDateCET = nowCET.endOf('day');
 }
 
 // Add 2 minutes to the end timestamp to adjust for "24:00"
-endDate = new Date(endDate.getTime() + 2 * 60 * 1000);
+endDateCET = endDateCET.plus({ minutes: 2 });
 
-// Start date is 5 years before today
-const startDate = new Date(new Date().setFullYear(now.getFullYear() - 20));
+// Start date is 20 years before today in CET
+const startDateCET = nowCET.minus({ years: 20 }).startOf('day');
 
 const COUNTRIES = [
     { name: "Austria", api: "https://api.awattar.at", cachedUrl: "https://spotprices.github.io/spotprices/cached-data-austria.json", output: path.join(outputDir, "cached-data-austria.json") },
@@ -48,9 +52,9 @@ async function fetchExistingData(country) {
 }
 
 function getLatestEndTimestamp(data) {
-    if (data.length === 0) return startDate.getTime();
+    if (data.length === 0) return startDateCET.toMillis();
     const latestEntry = data[data.length - 1];
-    return latestEntry.end_timestamp || startDate.getTime();
+    return latestEntry.end_timestamp || startDateCET.toMillis();
 }
 
 async function fetchAndSaveDataForCountry(country) {
@@ -58,14 +62,14 @@ async function fetchAndSaveDataForCountry(country) {
     const latestEndTimestamp = getLatestEndTimestamp(existingData);
     const newStartTimestamp = latestEndTimestamp;
 
-    if (newStartTimestamp >= endDate.getTime()) {
+    if (newStartTimestamp >= endDateCET.toMillis()) {
         console.log(`No new data to fetch for ${country.name}.`);
         fs.writeFileSync(country.output, JSON.stringify(existingData));
         return;
     }
 
-    const url = `${country.api}/v1/marketdata?start=${newStartTimestamp}&end=${endDate.getTime()}`;
-    console.log(`Fetching missing data for ${country.name} from ${new Date(newStartTimestamp).toISOString()} to ${endDate.toISOString()}...`);
+    const url = `${country.api}/v1/marketdata?start=${newStartTimestamp}&end=${endDateCET.toMillis()}`;
+    console.log(`Fetching missing data for ${country.name} from ${DateTime.fromMillis(newStartTimestamp, { zone: CET }).toISO()} to ${endDateCET.toISO()}...`);
 
     try {
         const response = await fetch(url);

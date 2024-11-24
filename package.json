@@ -10,6 +10,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "luxon": "^3.5.0",
     "node-fetch": "^3.3.2"
   }
 }
