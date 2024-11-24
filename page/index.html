@@ -95,7 +95,7 @@ SOFTWARE.
 </select>
 
 <label for="region">Region:</label>
-<select id="region" onchange="updatePricesWithGridFee()">
+<select id="region" onchange="fetchData()">
     <option value="0">None</option>
     <option value="10.87">Steiermark</option>
     <option value="10.01">Niederösterreich</option>
@@ -242,9 +242,15 @@ SOFTWARE.
     }
 
     function updatePricesWithGridFee() {
+        const elektrizitatsabgabePerKWh = 0.1;
         const regionFee = parseFloat(document.getElementById('region').value);
         const marketPrices = data.map(entry => (entry.marketprice * 0.1).toFixed(2)); // Convert EUR/MWh to ct/kWh
         const gridFees = data.map(() => regionFee.toFixed(2)); // Constant grid fee for all entries
+        const elektrizitatsabgabe = data.map(() => elektrizitatsabgabePerKWh.toFixed(2)); // Fixed value per kWh
+        const totalPrices = marketPrices.map((marketPrice) =>
+            (parseFloat(marketPrice) + regionFee + elektrizitatsabgabePerKWh)*1.2
+        );
+        const tax = totalPrices.map((totalPrice) => totalPrice/6.0 );
 
         const labels = data.map(entry =>
             new Date(entry.start_timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })
@@ -281,18 +287,32 @@ SOFTWARE.
             data: {
                 labels: labels,
                 datasets: [
-                {
+                    {
+                        label: 'Elektrizitätsabgabe (ct/kWh)',
+                        data: elektrizitatsabgabe,
+                        backgroundColor: 'rgba(255, 206, 86, 0.5)', // Elektrizitätsabgabe color
+                        borderColor: 'rgba(255, 206, 86, 1)',
+                        borderWidth: 1
+                    },
+                    {
                         label: 'Grid Fee (ct/kWh)',
                         data: gridFees,
                         backgroundColor: 'rgba(255, 99, 132, 0.5)', // Grid fee color
                         borderColor: 'rgba(255, 99, 132, 1)',
                         borderWidth: 1
-                    }
-,                    {
+                    },
+                    {
                         label: 'Market Price (ct/kWh)',
                         data: marketPrices,
                         backgroundColor: backgroundColors, // Market price color
                         borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Tax',
+                        data: tax,
+                        backgroundColor: 'rgba(75, 192, 192, 0.5)', // tax color
+                        borderColor: 'rgba(75, 192, 192, 1)',
                         borderWidth: 1
                     }
                 ]
@@ -304,10 +324,14 @@ SOFTWARE.
                     tooltip: {
                         callbacks: {
                             label: function (tooltipItem) {
-                                const datasetLabel = tooltipItem.dataset.label;
-                                const value = tooltipItem.raw;
-                                return `${datasetLabel}: ${value} ct/kWh`;
+                                const index = tooltipItem.dataIndex;
+                                const entry = data[index];
+                                const date = new Date(entry.start_timestamp).toLocaleDateString();
+                                const time = new Date(entry.start_timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+                                const price = (totalPrices[index]).toFixed(2);
+                                return `Date: ${date}, Time: ${time}, Price: ${price} ct/kWh`;
                             }
+                            
                         }
                     },
                     zoom: {
@@ -337,6 +361,7 @@ SOFTWARE.
             }
         });
     }
+
     function updateTable() {
         const tableBody = document.querySelector("#data-table tbody");
         tableBody.innerHTML = ""; // Clear the table
