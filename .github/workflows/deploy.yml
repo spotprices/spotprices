@@ -2,7 +2,7 @@ name: Update Cached Data
 
 on:
   schedule:
-    - cron: "0 14 * * *" # Run daily at 14:00 UTC
+    - cron: "0 13 * * *" # Run daily at 14:00 Vienna time
   workflow_dispatch: # Allow manual trigger if needed
 
 permissions:
