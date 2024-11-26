@@ -43,10 +43,10 @@ async function fetchExistingData(country) {
         const response = await fetch(country.cachedUrl);
         if (!response.ok) throw new Error(`No existing cached data found for ${country.name}`);
         const existingData = await response.json();
-        console.log(`Existing cached data loaded for ${country.name}`);
+        console.log(`Existing cached data loaded for ${country.name} from ${country.cachedUrl}`);
         return existingData;
     } catch (error) {
-        console.log(`No existing data available for ${country.name}. Fetching all data.`);
+        console.warn(`No existing data available for ${country.name}. Fetching all data.`);
         return [];
     }
 }
@@ -63,7 +63,14 @@ async function fetchAndSaveDataForCountry(country) {
     const newStartTimestamp = latestEndTimestamp;
 
     if (newStartTimestamp >= endDateCET.toMillis()) {
-        console.log(`No new data to fetch for ${country.name}.`);
+        console.error(`No new data to fetch for ${country.name}.`);
+        fs.writeFileSync(country.output, JSON.stringify(existingData));
+        return;
+    }
+
+    // Check if the time range is below 10 minutes
+    if ((endDateCET.toMillis() - newStartTimestamp) < 10 * 60 * 1000) { // 10 minutes in milliseconds
+        console.log(`Time range for ${country.name} is below 10 minutes. Skipping API fetch.`);
         fs.writeFileSync(country.output, JSON.stringify(existingData));
         return;
     }
