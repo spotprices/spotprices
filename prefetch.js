@@ -32,9 +32,11 @@ endDateCET = endDateCET.plus({ minutes: 2 });
 // Start date is 20 years before today in CET
 const startDateCET = nowCET.minus({ years: 20 }).startOf('day');
 
+const TARGET_URL_BASE = "https://spotprices.github.io/spotprices";
+
 const COUNTRIES = [
-    { name: "Austria", api: "https://api.awattar.at", cachedUrl: "https://spotprices.github.io/spotprices/cached-data-austria.json", output: path.join(outputDir, "cached-data-austria.json") },
-    { name: "Germany", api: "https://api.awattar.de", cachedUrl: "https://spotprices.github.io/spotprices/cached-data-germany.json", output: path.join(outputDir, "cached-data-germany.json") },
+    { name: "Austria", api: "https://api.awattar.at", cachedUrl: `${TARGET_URL_BASE}/cached-data-austria.json`, output: path.join(outputDir, "cached-data-austria.json") },
+    { name: "Germany", api: "https://api.awattar.de", cachedUrl: `${TARGET_URL_BASE}/cached-data-germany.json`, output: path.join(outputDir, "cached-data-germany.json") },
 ];
 
 async function fetchExistingData(country) {
