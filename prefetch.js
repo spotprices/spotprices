@@ -41,7 +41,7 @@ const COUNTRIES = [
     { name: "Germany", api: `${API_URL_COMMON}de`, cachedUrl: `${TARGET_URL_BASE}/${FILE_NAME_COMMON_PART}germany.json`, output: path.join(outputDir, `${FILE_NAME_COMMON_PART}germany.json`) },
 ];
 
-console.log(`Execution at ${nowCET}`);
+console.log(`Execution at ${nowCET} CET and ${DateTime.now()} UTC`);
 
 async function fetchExistingData(country) {
     try {
