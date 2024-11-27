@@ -33,11 +33,15 @@ endDateCET = endDateCET.plus({ minutes: 2 });
 const startDateCET = nowCET.minus({ years: 20 }).startOf('day');
 
 const TARGET_URL_BASE = "https://spotprices.github.io/spotprices";
+const FILE_NAME_COMMON_PART = "cached-data-";
+const API_URL_COMMON="https://api.awattar.";
 
 const COUNTRIES = [
-    { name: "Austria", api: "https://api.awattar.at", cachedUrl: `${TARGET_URL_BASE}/cached-data-austria.json`, output: path.join(outputDir, "cached-data-austria.json") },
-    { name: "Germany", api: "https://api.awattar.de", cachedUrl: `${TARGET_URL_BASE}/cached-data-germany.json`, output: path.join(outputDir, "cached-data-germany.json") },
+    { name: "Austria", api: `${API_URL_COMMON}at`, cachedUrl: `${TARGET_URL_BASE}/${FILE_NAME_COMMON_PART}austria.json`, output: path.join(outputDir, `${FILE_NAME_COMMON_PART}austria.json`) },
+    { name: "Germany", api: `${API_URL_COMMON}de`, cachedUrl: `${TARGET_URL_BASE}/${FILE_NAME_COMMON_PART}germany.json`, output: path.join(outputDir, `${FILE_NAME_COMMON_PART}germany.json`) },
 ];
+
+console.log(`Execution at ${nowCET}`);
 
 async function fetchExistingData(country) {
     try {
