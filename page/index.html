@@ -159,11 +159,11 @@ SOFTWARE.
     // Set default values for date inputs
     window.onload = () => {
         const today = new Date();
-        const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        const tomorrow = new Date();
+        tomorrow.setDate(today.getDate() + 1); // Add one day to get tomorrow
 
-        document.getElementById('start-date').value = firstDayOfMonth.toISOString().split('T')[0];
-        document.getElementById('end-date').value = today.toISOString().split('T')[0];
-
+        document.getElementById('start-date').value = today.toISOString().split('T')[0];
+        document.getElementById('end-date').value = tomorrow.toISOString().split('T')[0];
         // Adjust chart container height to fit the viewport
         adjustChartHeight();
     };
