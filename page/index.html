@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,6 +12,7 @@
             font-family: Arial, sans-serif;
             margin: 20px;
         }
+
         #chart-container {
             margin-top: 20px;
             margin-bottom: 40px;
@@ -18,50 +20,61 @@
             justify-content: center;
             align-items: center;
         }
+
         canvas {
             max-width: 100%;
             height: auto;
         }
+
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
         }
-        th, td {
+
+        th,
+        td {
             border: 1px solid #ddd;
             text-align: left;
             padding: 8px;
         }
+
         th {
             background-color: #f4f4f4;
         }
+
         button {
             padding: 8px 16px;
             margin: 0 5px;
             cursor: pointer;
         }
+
         #pagination {
             margin-top: 20px;
             text-align: center;
         }
+
         footer {
             margin-top: 40px;
             text-align: center;
         }
+
         footer a {
             text-decoration: none;
             color: blue;
         }
+
         footer a:hover {
             text-decoration: underline;
         }
     </style>
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3656336773428126"
-    crossorigin="anonymous"></script>
+        crossorigin="anonymous"></script>
 </head>
+
 <body>
 
-<!--
+    <!--
 MIT License
 
 Copyright (c) 2024 Reinhold Degenfellner
@@ -85,364 +98,442 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 -->
 
-<h1>Energy Price Navigator</h1>
-<p>Select a country, region, and a date range to fetch the energy price data:</p>
+    <h1>Energy Price Navigator</h1>
+    <p>Select a country, region, and a date range to fetch the energy price data:</p>
 
-<label for="country">Country:</label>
-<select id="country">
-    <option value="Austria">Austria</option>
-    <option value="Germany">Germany</option>
-</select>
+    <label for="country">Country:</label>
+    <select id="country">
+        <option value="Austria">Austria</option>
+        <option value="Germany">Germany</option>
+    </select>
 
-<label for="region">Region:</label>
-<select id="region" onchange="fetchData()">
-    <option value="0">None</option>
-    <option value="10.87">Steiermark</option>
-    <option value="10.01">Niederösterreich</option>
-    <option value="9.46">Wien</option>
-    <option value="8.15">Oberösterreich</option>
-    <option value="8.62">Burgenland</option>
-    <option value="11.77">Kärnten</option>
-    <option value="7.06">Vorarlberg</option>
-    <option value="9.33">Salzburg</option>
-    <option value="7.85">Tirol</option>
-    <option value="9.37">Klagenfurt</option>
-    <option value="7.06" selected>Linz</option>
-    <option value="10.03">Innsbruck</option>
-    <option value="7.48">Graz</option>
-</select>
+    <label for="region">Region:</label>
+    <select id="region" onchange="fetchData()">
+        <option>None</option>
+        <option>Steiermark</option>
+        <option>Niederösterreich</option>
+        <option>Wien</option>
+        <option>Oberösterreich</option>
+        <option>Burgenland</option>
+        <option>Kärnten</option>
+        <option>Vorarlberg</option>
+        <option>Salzburg</option>
+        <option>Tirol</option>
+        <option>Klagenfurt</option>
+        <option selected>Linz</option>
+        <option>Innsbruck</option>
+        <option>Graz</option>
+    </select>
 
-<label for="provider">Electricity Provider:</label>
-<select id="provider" onchange="fetchData()">
-    <option value="none">None</option>
-    <option value="awattar" selected>aWATTar (1.5 ct + 3% of market price)</option>
-    <option value="smartenergy">SmartEnergy (1.2 ct)</option>
-</select>
+    <label for="provider">Electricity Provider:</label>
+    <select id="provider" onchange="fetchData()">
+        <option value="none">None</option>
+        <option value="awattar" selected>aWATTar (1.5 ct + 3% of market price)</option>
+        <option value="smartenergy">SmartEnergy (1.2 ct)</option>
+    </select>
 
-<label for="start-date">Start Date:</label>
-<input type="date" id="start-date">
-<label for="end-date">End Date:</label>
-<input type="date" id="end-date">
-<button onclick="fetchData()">Fetch Data</button>
-<button onclick="resetZoom()">Reset Zoom</button>
+    <label for="start-date">Start Date:</label>
+    <input type="date" id="start-date">
+    <label for="end-date">End Date:</label>
+    <input type="date" id="end-date">
+    <button onclick="fetchData()">Fetch Data</button>
+    <button onclick="resetZoom()">Reset Zoom</button>
 
-<div id="chart-container">
-    <canvas id="price-chart"></canvas>
-</div>
+    <div id="chart-container">
+        <canvas id="price-chart"></canvas>
+    </div>
 
-<table id="data-table">
-    <thead>
-        <tr>
-            <th>Start Time</th>
-            <th>End Time</th>
-            <th>Market Price (ct/kWh)</th>
-        </tr>
-    </thead>
-    <tbody>
-        <!-- Data will be dynamically inserted here -->
-    </tbody>
-</table>
+    <table id="data-table">
+        <thead>
+            <tr>
+                <th>Start Time</th>
+                <th>End Time</th>
+                <th>Market Price (ct/kWh)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Data will be dynamically inserted here -->
+        </tbody>
+    </table>
 
-<div id="pagination">
-    <button onclick="prevPage()">Previous</button>
-    <span id="page-info">Page: 1</span>
-    <button onclick="nextPage()">Next</button>
-</div>
+    <div id="pagination">
+        <button onclick="prevPage()">Previous</button>
+        <span id="page-info">Page: 1</span>
+        <button onclick="nextPage()">Next</button>
+    </div>
 
-<script>
-    let cachedData = {};
-    let data = [];
-    let chart;
-    let currentPage = 1;
-    const rowsPerPage = 50;
+    <script>
+        const gridFees2024 = {
+            endDate: "2024-12-31",
+            startDate: "2024-01-01",
+            "Kleinwalsertal": 17.9,
+            "Kärnten": 10.26,
+            "Steiermark": 8.43,
+            "Oberösterreich": 6.48,
+            "Innsbruck": 9.58,
+            "Burgenland": 6.98,
+            "Klagenfurt": 7.64,
+            "Niederösterreich": 7.58,
+            "Salzburg": 8.22,
+            "Wien": 7.19,
+            "Tirol": 7.25,
+            "Graz": 7.84,
+            "Linz": 5.94,
+            "Vorarlberg": 5.93,
+        };
+        const gridFees2025 = {
+            startDate: "2025-01-01",
+            endDate: "9999-12-31",
+            "Kleinwalsertal": 17.9 * 1.33,
+            "Kärnten": 11.77,
+            "Steiermark": 10.87,
+            "Oberösterreich": 8.15,
+            "Innsbruck": 10.03,
+            "Burgenland": 8.62,
+            "Klagenfurt": 9.37,
+            "Niederösterreich": 10.01,
+            "Salzburg": 9.33,
+            "Wien": 9.46,
+            "Tirol": 7.85,
+            "Graz": 7.48,
+            "Linz": 7.06,
+            "Vorarlberg": 7.06,
+        };
+        const gridFees2023 = {
+            endDate: "2023-12-31",
+            startDate: "2023-01-01",
+            "Kleinwalsertal": 14.82,
+            "Kärnten": 10.58,
+            "Steiermark": 9.46,
+            "Oberösterreich": 8.67,
+            "Innsbruck": 9.65,
+            "Burgenland": 9.33,
+            "Klagenfurt": 8.22,
+            "Niederösterreich": 8.62,
+            "Salzburg": 8.04,
+            "Wien": 8.94,
+            "Tirol": 8.74,
+            "Graz": 8.88,
+            "Linz": 6.56,
+            "Vorarlberg": 6.39,
+        };
 
-    // Set default values for date inputs
-    window.onload = () => {
-        const today = new Date();
-        const tomorrow = new Date();
-        tomorrow.setDate(today.getDate() + 1); // Add one day to get tomorrow
+        const gridFees = [gridFees2023, gridFees2024, gridFees2025];
 
-        document.getElementById('start-date').value = today.toISOString().split('T')[0];
-        document.getElementById('end-date').value = tomorrow.toISOString().split('T')[0];
-        // Adjust chart container height to fit the viewport
-        adjustChartHeight();
-    };
+        function getGridFee(region, date) {
+            const targetDate = new Date(date);
 
-    function adjustChartHeight() {
-        const viewportHeight = window.innerHeight;
-        const headerHeight = document.querySelector("h1").offsetHeight;
-        const controlsHeight = document.querySelector("p").offsetHeight + 40; // Approximate height of controls
-        const availableHeight = viewportHeight - headerHeight - controlsHeight - 100; // Margin for table and spacing
-        document.getElementById('chart-container').style.height = `${availableHeight}px`;
-    }
+            for (const gridFeePeriod of gridFees) {
+                const startDate = new Date(gridFeePeriod.startDate);
+                const endDate = new Date(gridFeePeriod.endDate);
 
-    async function fetchData() {
-        const startDate = document.getElementById('start-date').value;
-        const endDate = document.getElementById('end-date').value;
-        const country = document.getElementById('country').value;
-
-        const startTimestamp = new Date(startDate).getTime();
-
-        // Adjust endTimestamp to include the entire day and add 1 extra second
-        const endTimestamp = new Date(new Date(endDate).setHours(23, 59, 59, 999)).getTime() + 1000;
-
-        // Check if cached data for the selected country is already loaded
-        if (!cachedData[country]) {
-            console.log(`Loading cached data for ${country}...`);
-            try {
-                const cachedFile = country === "Austria" ? "cached-data-austria.json" : "cached-data-germany.json";
-                const response = await fetch(cachedFile);
-                if (response.ok) {
-                    cachedData[country] = (await response.json()).map(({ unit, ...rest }) => rest); // Remove 'unit' if it exists
-                    console.log(`Cached data for ${country} loaded.`);
-                } else {
-                    cachedData[country] = [];
-                    console.warn(`No cached data found for ${country}.`);
+                // Check if the date is within the range for the current grid fee period
+                if (targetDate >= startDate && targetDate <= endDate) {
+                    return gridFeePeriod[region] || null; // Return the grid fee for the region, or null if not found
                 }
-            } catch (error) {
-                console.error(`Error loading cached data for ${country}:`, error);
-                cachedData[country] = [];
             }
+
+            return null; // Return null if no matching period is found
         }
 
-        // Filter data from cached data
-        const cachedResults = cachedData[country].filter(entry =>
-            entry.start_timestamp >= startTimestamp && entry.end_timestamp <= endTimestamp
-        );
+        let cachedData = {};
+        let data = [];
+        let chart;
+        let currentPage = 1;
+        const rowsPerPage = 50;
 
-        if (cachedResults.length === 0 && cachedData[country].length > 0) {
-            alert("No data available for the selected date range.");
-            return;
+        // Set default values for date inputs
+        window.onload = () => {
+            const today = new Date();
+            const tomorrow = new Date();
+            tomorrow.setDate(today.getDate() + 1); // Add one day to get tomorrow
+
+            document.getElementById('start-date').value = today.toISOString().split('T')[0];
+            document.getElementById('end-date').value = tomorrow.toISOString().split('T')[0];
+            // Adjust chart container height to fit the viewport
+            adjustChartHeight();
+        };
+
+        function adjustChartHeight() {
+            const viewportHeight = window.innerHeight;
+            const headerHeight = document.querySelector("h1").offsetHeight;
+            const controlsHeight = document.querySelector("p").offsetHeight + 40; // Approximate height of controls
+            const availableHeight = viewportHeight - headerHeight - controlsHeight - 100; // Margin for table and spacing
+            document.getElementById('chart-container').style.height = `${availableHeight}px`;
         }
 
-        if (cachedResults.length > 0) {
-            console.log(`Data loaded from cache for ${country}.`);
-            data = cachedResults;
-            currentPage = 1;
-            updatePricesWithGridFee();
-            updateTable();
-            return;
-        }
+        async function fetchData() {
+            const startDate = document.getElementById('start-date').value;
+            const endDate = document.getElementById('end-date').value;
+            const country = document.getElementById('country').value;
 
-        // If not fully in cache, fetch from API
-        console.log(`Fetching API data for ${country} from ${new Date(startTimestamp).toISOString()} to ${new Date(endTimestamp).toISOString()}...`);
-        const apiURL = country === "Austria" ? "https://api.awattar.at" : "https://api.awattar.de";
-        const url = `${apiURL}/v1/marketdata?start=${startTimestamp}&end=${endTimestamp}`;
+            const startTimestamp = new Date(startDate).getTime();
 
-        try {
-            const response = await fetch(url);
-            if (!response.ok) throw new Error(`Failed to fetch data: ${response.statusText}`);
-            const result = await response.json();
-            const fetchedData = result.data.map(({ unit, ...rest }) => rest); // Remove 'unit' if it exists
+            // Adjust endTimestamp to include the entire day and add 1 extra second
+            const endTimestamp = new Date(new Date(endDate).setHours(23, 59, 59, 999)).getTime() + 1000;
 
-            // Update cache with the new data
-            cachedData[country] = [...cachedData[country], ...fetchedData];
-
-            // Use fetched data for the chart and table
-            data = fetchedData;
-            currentPage = 1;
-            updatePricesWithGridFee();
-            updateTable();
-        } catch (error) {
-            alert(`Error: ${error.message}`);
-        }
-    }
-
-    function updatePricesWithGridFee() {
-        const elektrizitatsabgabePerKWh = 0.1;
-        const regionFee = parseFloat(document.getElementById('region').value);
-        const provider = document.getElementById('provider').value;
-        const marketPrices = data.map(entry => (entry.marketprice * 0.1).toFixed(2)); // Convert EUR/MWh to ct/kWh
-        const gridFees = data.map(() => regionFee.toFixed(2)); // Constant grid fee for all entries
-        const elektrizitatsabgabe = data.map(() => elektrizitatsabgabePerKWh.toFixed(2)); // Fixed value per kWh
-        // Calculate provider-specific fees
-        const providerFees = marketPrices.map(marketPrice => {
-            switch (provider) {
-                case 'awattar':
-                    return (parseFloat(marketPrice) * 0.03 + 1.5).toFixed(2); // 3% of market price + 1.5 ct
-                case 'smartenergy':
-                    return 1.2.toFixed(2); // Fixed 1.2 ct
-                default:
-                    return 0.0.toFixed(2); // No provider fee
-            }
-        });
-
-        const totalPrices = marketPrices.map((marketPrice, index) =>
-            (parseFloat(marketPrice) + regionFee + elektrizitatsabgabePerKWh+parseFloat(providerFees[index]))*1.2
-        );
-        const tax = totalPrices.map((totalPrice) => totalPrice/6.0 );
-
-        const labels = data.map(entry =>
-            new Date(entry.start_timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })
-        );
-        const prices = data.map(entry => (entry.marketprice * 0.1).toFixed(2)); // Convert EUR/MWh to ct/kWh
-        const today = new Date();
-        const currentHour = today.getHours();
-        const currentDay = today.getDate(); // Use getDate() for the day of the month
-        const currentMonth = today.getMonth(); // Zero-based (0 = January, 11 = December)
-        const currentYear = today.getFullYear();
-
-        const backgroundColors = data.map(entry => {
-            const entryDate = new Date(entry.start_timestamp);
-            const entryHour = entryDate.getHours();
-            const entryDay = entryDate.getDate();
-            const entryMonth = entryDate.getMonth();
-            const entryYear = entryDate.getFullYear();
-
-            // Check if the hour, day, month, and year all match
-            if (entryHour === currentHour && entryDay === currentDay && entryMonth === currentMonth && entryYear === currentYear) {
-                return 'rgba(255, 99, 132, 0.5)'; // Highlight color
-            }
-            return 'rgba(54, 162, 235, 0.5)'; // Default color
-        });
-        const ctx = document.getElementById('price-chart').getContext('2d');
-
-        // Destroy existing chart instance if it exists
-        if (chart) {
-            chart.destroy();
-        }
-
-        chart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [
-                    {
-                        label: 'Elektrizitätsabgabe (ct/kWh)',
-                        data: elektrizitatsabgabe,
-                        backgroundColor: 'rgba(255, 206, 86, 0.5)', // Elektrizitätsabgabe color
-                        borderColor: 'rgba(255, 206, 86, 1)',
-                        borderWidth: 1
-                    },
-                    {
-                        label: 'Grid Fee (ct/kWh)',
-                        data: gridFees,
-                        backgroundColor: 'rgba(255, 99, 132, 0.5)', // Grid fee color
-                        borderColor: 'rgba(255, 99, 132, 1)',
-                        borderWidth: 1
-                    },
-                    {
-                        label: 'Market Price (ct/kWh)',
-                        data: marketPrices,
-                        backgroundColor: backgroundColors, // Market price color
-                        borderColor: 'rgba(54, 162, 235, 1)',
-                        borderWidth: 1
-                    },
-                    {
-                        label: 'Provider Fee (ct/kWh)',
-                        data: providerFees,
-                        backgroundColor: 'rgba(153, 102, 255, 0.5)', // Provider fee color
-                        borderColor: 'rgba(153, 102, 255, 1)',
-                        borderWidth: 1
-                    },
-                    {
-                        label: 'Tax',
-                        data: tax,
-                        backgroundColor: 'rgba(75, 192, 192, 0.5)', // tax color
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        borderWidth: 1
+            // Check if cached data for the selected country is already loaded
+            if (!cachedData[country]) {
+                console.log(`Loading cached data for ${country}...`);
+                try {
+                    const cachedFile = country === "Austria" ? "cached-data-austria.json" : "cached-data-germany.json";
+                    const response = await fetch(cachedFile);
+                    if (response.ok) {
+                        cachedData[country] = (await response.json()).map(({ unit, ...rest }) => rest); // Remove 'unit' if it exists
+                        console.log(`Cached data for ${country} loaded.`);
+                    } else {
+                        cachedData[country] = [];
+                        console.warn(`No cached data found for ${country}.`);
                     }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    tooltip: {
-                        callbacks: {
-                            label: function (tooltipItem) {
-                                const index = tooltipItem.dataIndex;
-                                const entry = data[index];
-                                const date = new Date(entry.start_timestamp).toLocaleDateString();
-                                const time = new Date(entry.start_timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
-                                const price = (totalPrices[index]).toFixed(2);
-                                const marketPrice = (marketPrices[index]);
-                                return `Date: ${date}, Time: ${time}, Price: ${price} ct/kWh, Marketprice: ${marketPrice} ct/kWh, provider: ${providerFees[index]} ct/kWh`;
-                            }
-                            
+                } catch (error) {
+                    console.error(`Error loading cached data for ${country}:`, error);
+                    cachedData[country] = [];
+                }
+            }
+
+            // Filter data from cached data
+            const cachedResults = cachedData[country].filter(entry =>
+                entry.start_timestamp >= startTimestamp && entry.end_timestamp <= endTimestamp
+            );
+
+            if (cachedResults.length === 0 && cachedData[country].length > 0) {
+                alert("No data available for the selected date range.");
+                return;
+            }
+
+            if (cachedResults.length > 0) {
+                console.log(`Data loaded from cache for ${country}.`);
+                data = cachedResults;
+                currentPage = 1;
+                updatePricesWithGridFee();
+                updateTable();
+                return;
+            }
+
+            // If not fully in cache, fetch from API
+            console.log(`Fetching API data for ${country} from ${new Date(startTimestamp).toISOString()} to ${new Date(endTimestamp).toISOString()}...`);
+            const apiURL = country === "Austria" ? "https://api.awattar.at" : "https://api.awattar.de";
+            const url = `${apiURL}/v1/marketdata?start=${startTimestamp}&end=${endTimestamp}`;
+
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`Failed to fetch data: ${response.statusText}`);
+                const result = await response.json();
+                const fetchedData = result.data.map(({ unit, ...rest }) => rest); // Remove 'unit' if it exists
+
+                // Update cache with the new data
+                cachedData[country] = [...cachedData[country], ...fetchedData];
+
+                // Use fetched data for the chart and table
+                data = fetchedData;
+                currentPage = 1;
+                updatePricesWithGridFee();
+                updateTable();
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+            }
+        }
+        function calculateProviderFees(marketPrices, provider) {
+            // Calculate provider-specific fees
+            return marketPrices.map(marketPrice => {
+                switch (provider) {
+                    case 'awattar':
+                        return (parseFloat(marketPrice) * 0.03 + 1.5).toFixed(2); // 3% of market price + 1.5 ct
+                    case 'smartenergy':
+                        return 1.2.toFixed(2); // Fixed 1.2 ct
+                    default:
+                        return 0.0.toFixed(2); // No provider fee
+                }
+            });
+        }
+        function updatePricesWithGridFee() {
+            const elektrizitatsabgabePerKWh = 0.1;
+            const selectElement = document.getElementById('region');
+            const selectedOptionText = selectElement.options[selectElement.selectedIndex].text;
+            const provider = document.getElementById('provider').value;
+            const marketPrices = data.map(entry => (entry.marketprice * 0.1).toFixed(2)); // Convert EUR/MWh to ct/kWh
+            const gridFees = data.map((entry) => getGridFee(selectedOptionText, entry.start_timestamp)); // Constant grid fee for all entries
+            const elektrizitatsabgabe = data.map(() => elektrizitatsabgabePerKWh.toFixed(2)); // Fixed value per kWh
+            const providerFees = calculateProviderFees(marketPrices, provider);
+
+            const totalPrices = marketPrices.map((marketPrice, index) =>
+                (parseFloat(marketPrice) + gridFees[index] + elektrizitatsabgabePerKWh + parseFloat(providerFees[index])) * 1.2
+            );
+            const tax = totalPrices.map((totalPrice) => totalPrice / 6.0);
+
+            const labels = data.map(entry =>
+                new Date(entry.start_timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })
+            );
+            const prices = data.map(entry => (entry.marketprice * 0.1).toFixed(2)); // Convert EUR/MWh to ct/kWh
+            const today = new Date();
+            const currentHour = today.getHours();
+            const currentDay = today.getDate(); // Use getDate() for the day of the month
+            const currentMonth = today.getMonth(); // Zero-based (0 = January, 11 = December)
+            const currentYear = today.getFullYear();
+
+            const backgroundColors = data.map(entry => {
+                const entryDate = new Date(entry.start_timestamp);
+                const entryHour = entryDate.getHours();
+                const entryDay = entryDate.getDate();
+                const entryMonth = entryDate.getMonth();
+                const entryYear = entryDate.getFullYear();
+
+                // Check if the hour, day, month, and year all match
+                if (entryHour === currentHour && entryDay === currentDay && entryMonth === currentMonth && entryYear === currentYear) {
+                    return 'rgba(255, 99, 132, 0.5)'; // Highlight color
+                }
+                return 'rgba(54, 162, 235, 0.5)'; // Default color
+            });
+            const ctx = document.getElementById('price-chart').getContext('2d');
+
+            // Destroy existing chart instance if it exists
+            if (chart) {
+                chart.destroy();
+            }
+
+            chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Elektrizitätsabgabe (ct/kWh)',
+                            data: elektrizitatsabgabe,
+                            backgroundColor: 'rgba(255, 206, 86, 0.5)', // Elektrizitätsabgabe color
+                            borderColor: 'rgba(255, 206, 86, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Grid Fee (ct/kWh)',
+                            data: gridFees,
+                            backgroundColor: 'rgba(255, 99, 132, 0.5)', // Grid fee color
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Market Price (ct/kWh)',
+                            data: marketPrices,
+                            backgroundColor: backgroundColors, // Market price color
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Provider Fee (ct/kWh)',
+                            data: providerFees,
+                            backgroundColor: 'rgba(153, 102, 255, 0.5)', // Provider fee color
+                            borderColor: 'rgba(153, 102, 255, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Tax',
+                            data: tax,
+                            backgroundColor: 'rgba(75, 192, 192, 0.5)', // tax color
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1
                         }
-                    },
-                    zoom: {
-                        pan: {
-                            enabled: true,
-                            mode: 'x' // Allow horizontal panning
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function (tooltipItem) {
+                                    const index = tooltipItem.dataIndex;
+                                    const entry = data[index];
+                                    const date = new Date(entry.start_timestamp).toLocaleDateString();
+                                    const time = new Date(entry.start_timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+                                    const price = (totalPrices[index]).toFixed(2);
+                                    const marketPrice = (marketPrices[index]);
+                                    return `Date: ${date}, Time: ${time}, Price: ${price} ct/kWh, Marketprice: ${marketPrice} ct/kWh, provider: ${providerFees[index]} ct/kWh`;
+                                }
+
+                            }
                         },
                         zoom: {
-                            wheel: { enabled: true },
-                            drag: { enabled: true },
-                            pinch: { enabled: true },
-                            mode: 'x'
+                            pan: {
+                                enabled: true,
+                                mode: 'x' // Allow horizontal panning
+                            },
+                            zoom: {
+                                wheel: { enabled: true },
+                                drag: { enabled: true },
+                                pinch: { enabled: true },
+                                mode: 'x'
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Time' },
+                            stacked: true // Enable stacking for the x-axis
+                        },
+                        y: {
+                            title: { display: true, text: 'Price (ct/kWh)' },
+                            beginAtZero: true,
+                            stacked: true // Enable stacking for the y-axis
                         }
                     }
-                },
-                scales: {
-                    x: {
-                        title: { display: true, text: 'Time' },
-                        stacked: true // Enable stacking for the x-axis
-                    },
-                    y: {
-                        title: { display: true, text: 'Price (ct/kWh)' },
-                        beginAtZero: true,
-                        stacked: true // Enable stacking for the y-axis
-                    }
                 }
-            }
-        });
-    }
+            });
+        }
 
-    function updateTable() {
-        const tableBody = document.querySelector("#data-table tbody");
-        tableBody.innerHTML = ""; // Clear the table
+        function updateTable() {
+            const tableBody = document.querySelector("#data-table tbody");
+            tableBody.innerHTML = ""; // Clear the table
 
-        const startIndex = (currentPage - 1) * rowsPerPage;
-        const endIndex = Math.min(startIndex + rowsPerPage, data.length);
-        const pageData = data.slice(startIndex, endIndex);
+            const startIndex = (currentPage - 1) * rowsPerPage;
+            const endIndex = Math.min(startIndex + rowsPerPage, data.length);
+            const pageData = data.slice(startIndex, endIndex);
 
-        pageData.forEach(entry => {
-            const startTime = new Date(entry.start_timestamp).toLocaleString('en-GB', { hour12: false });
-            const endTime = new Date(entry.end_timestamp).toLocaleString('en-GB', { hour12: false });
-            const marketPriceCtKWh = (entry.marketprice * 0.1).toFixed(2); // Convert EUR/MWh to ct/kWh
-            const row = `
+            pageData.forEach(entry => {
+                const startTime = new Date(entry.start_timestamp).toLocaleString('en-GB', { hour12: false });
+                const endTime = new Date(entry.end_timestamp).toLocaleString('en-GB', { hour12: false });
+                const marketPriceCtKWh = (entry.marketprice * 0.1).toFixed(2); // Convert EUR/MWh to ct/kWh
+                const row = `
                 <tr>
                     <td>${startTime}</td>
                     <td>${endTime}</td>
                     <td>${marketPriceCtKWh}</td>
                 </tr>
             `;
-            tableBody.innerHTML += row;
-        });
+                tableBody.innerHTML += row;
+            });
 
-        // Update pagination info
-        document.getElementById('page-info').textContent = `Page: ${currentPage}`;
-    }
-
-    function prevPage() {
-        if (currentPage > 1) {
-            currentPage--;
-            updateTable();
+            // Update pagination info
+            document.getElementById('page-info').textContent = `Page: ${currentPage}`;
         }
-    }
 
-    function nextPage() {
-        if (currentPage * rowsPerPage < data.length) {
-            currentPage++;
-            updateTable();
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                updateTable();
+            }
         }
-    }
 
-    function resetZoom() {
-        if (chart) {
-            chart.resetZoom();
+        function nextPage() {
+            if (currentPage * rowsPerPage < data.length) {
+                currentPage++;
+                updateTable();
+            }
         }
-    }
 
-    // Adjust chart height on window resize
-    window.addEventListener('resize', adjustChartHeight);
-</script>
+        function resetZoom() {
+            if (chart) {
+                chart.resetZoom();
+            }
+        }
 
-<footer>
-    <p><a href="impressum.html" target="_blank">Impressum</a></p>
-    <p>Andere haben mindestens genauso gute Ideen: <a href="https://awattar-backtesting.github.io/" target="_blank">awattar-backtesting</a></p>
-</footer>
+        // Adjust chart height on window resize
+        window.addEventListener('resize', adjustChartHeight);
+    </script>
+
+    <footer>
+        <p><a href="impressum.html" target="_blank">Impressum</a></p>
+        <p>Andere haben mindestens genauso gute Ideen: <a href="https://awattar-backtesting.github.io/"
+                target="_blank">awattar-backtesting</a></p>
+    </footer>
 </body>
+
 </html>
