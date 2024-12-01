@@ -37,8 +37,8 @@ const FILE_NAME_COMMON_PART = "cached-data-";
 const API_URL_COMMON="https://api.awattar.";
 
 const COUNTRIES = [
-    { name: "Austria", api: `${API_URL_COMMON}at`, cachedUrl: `${TARGET_URL_BASE}/${FILE_NAME_COMMON_PART}austria.json`, output: path.join(outputDir, `${FILE_NAME_COMMON_PART}austria.json`) },
-    { name: "Germany", api: `${API_URL_COMMON}de`, cachedUrl: `${TARGET_URL_BASE}/${FILE_NAME_COMMON_PART}germany.json`, output: path.join(outputDir, `${FILE_NAME_COMMON_PART}germany.json`) },
+    { name: "Austria", api: `${API_URL_COMMON}at` },
+    { name: "Germany", api: `${API_URL_COMMON}de`},
 ];
 
 console.log(`Execution at ${nowCET} CET and ${DateTime.now()} UTC`);
@@ -46,7 +46,7 @@ console.log(`Execution at ${nowCET} CET and ${DateTime.now()} UTC`);
 async function fetchExistingData(country) {
     try {
         console.log(`Checking existing cached data for ${country.name}...`);
-        const response = await fetch(country.cachedUrl);
+        const response = await fetch(`${TARGET_URL_BASE}/${FILE_NAME_COMMON_PART}${country.name.toLowerCase()}.json`);
         if (!response.ok) throw new Error(`No existing cached data found for ${country.name}`);
         const existingData = await response.json();
         console.log(`Existing cached data loaded for ${country.name} from ${country.cachedUrl}`);
@@ -70,7 +70,7 @@ async function fetchAndSaveDataForCountry(country) {
 
     if (newStartTimestamp >= endDateCET.toMillis()) {
         console.error(`No new data to fetch for ${country.name}.`);
-        fs.writeFileSync(country.output, JSON.stringify(existingData));
+        fs.writeFileSync(path.join(outputDir, `${FILE_NAME_COMMON_PART}${country.name.toLowerCase()}.json`), JSON.stringify(existingData));
         return;
     }
 
