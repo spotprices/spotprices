@@ -68,9 +68,11 @@ async function fetchAndSaveDataForCountry(country) {
     const latestEndTimestamp = getLatestEndTimestamp(existingData);
     const newStartTimestamp = latestEndTimestamp;
 
+    const jsonPath = path.join(outputDir, `${FILE_NAME_COMMON_PART}${country.name.toLowerCase()}.json`)
+
     if (newStartTimestamp >= endDateCET.toMillis()) {
         console.error(`No new data to fetch for ${country.name}.`);
-        fs.writeFileSync(path.join(outputDir, `${FILE_NAME_COMMON_PART}${country.name.toLowerCase()}.json`), JSON.stringify(existingData));
+        fs.writeFileSync(jsonPath, JSON.stringify(existingData));
         return;
     }
 
@@ -86,6 +88,7 @@ async function fetchAndSaveDataForCountry(country) {
 
     try {
         const response = await fetch(url);
+        console.log("fetched data from", url);
         if (!response.ok) throw new Error(`Failed to fetch data for ${country.name}: ${response.statusText}`);
         const result = await response.json();
 
@@ -93,7 +96,7 @@ async function fetchAndSaveDataForCountry(country) {
         const mergedData = [...existingData, ...result.data].map(({ unit, ...rest }) => rest); // Remove 'unit' if it exists
 
         // Save the merged data in a minimalized format
-        fs.writeFileSync(country.output, JSON.stringify(mergedData));
+        fs.writeFileSync(jsonPath, JSON.stringify(mergedData));
         console.log(`Data successfully updated and saved to ${country.output} for ${country.name}!`);
     } catch (error) {
         console.error(`Error fetching data for ${country.name}:`, error.message);
