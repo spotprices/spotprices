@@ -46,10 +46,11 @@ console.log(`Execution at ${nowCET} CET and ${DateTime.now()} UTC`);
 async function fetchExistingData(country) {
     try {
         console.log(`Checking existing cached data for ${country.name}...`);
-        const response = await fetch(`${TARGET_URL_BASE}/${FILE_NAME_COMMON_PART}${country.name.toLowerCase()}.json`);
+        const cacheUrl = `${TARGET_URL_BASE}/${FILE_NAME_COMMON_PART}${country.name.toLowerCase()}.json`;
+        const response = await fetch(cacheUrl);
         if (!response.ok) throw new Error(`No existing cached data found for ${country.name}`);
         const existingData = await response.json();
-        console.log(`Existing cached data loaded for ${country.name} from ${country.cachedUrl}`);
+        console.log(`Existing cached data loaded for ${country.name} from ${cacheUrl}`);
         return existingData;
     } catch (error) {
         console.warn(`No existing data available for ${country.name}. Fetching all data.`);
@@ -97,7 +98,7 @@ async function fetchAndSaveDataForCountry(country) {
 
         // Save the merged data in a minimalized format
         fs.writeFileSync(jsonPath, JSON.stringify(mergedData));
-        console.log(`Data successfully updated and saved to ${country.output} for ${country.name}!`);
+        console.log(`Data successfully updated and saved to ${jsonPath} for ${country.name}!`);
     } catch (error) {
         console.error(`Error fetching data for ${country.name}:`, error.message);
     }
