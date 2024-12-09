@@ -79,7 +79,7 @@ async function fetchAndSaveDataForCountry(country) {
     // Check if the time range is below 10 minutes
     if ((endDateCET.toMillis() - newStartTimestamp) < 10 * 60 * 1000) { // 10 minutes in milliseconds
         console.log(`Time range for ${country.name} is below 10 minutes. Skipping API fetch.`);
-        fs.writeFileSync(country.output, JSON.stringify(existingData));
+        fs.writeFileSync(jsonPath, JSON.stringify(existingData));
         return;
     }
 
