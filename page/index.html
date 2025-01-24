@@ -348,7 +348,7 @@ SOFTWARE.
         const endDate = new Date("2024-12-31");
         const getElektrizitatsabgabePerKWh = (date) => {
             const targetDate = new Date(date);
-            return targetDate >= startDate && targetDate <= endDate ? 0.1 : 15.0;
+            return targetDate >= startDate && targetDate <= endDate ? 0.1 : 1.5;
         };
         function updatePricesWithGridFee() {
             const elektrizitatsabgabePerKWh = 0.1;
