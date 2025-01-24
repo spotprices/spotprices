@@ -344,6 +344,12 @@ SOFTWARE.
                 }
             });
         }
+        const startDate = new Date("2022-04-01");
+        const endDate = new Date("2024-12-31");
+        const getElektrizitatsabgabePerKWh = (date) => {
+            const targetDate = new Date(date);
+            return targetDate >= startDate && targetDate <= endDate ? 0.1 : 15.0;
+        };
         function updatePricesWithGridFee() {
             const elektrizitatsabgabePerKWh = 0.1;
             const selectElement = document.getElementById('region');
@@ -351,7 +357,7 @@ SOFTWARE.
             const provider = document.getElementById('provider').value;
             const marketPrices = data.map(entry => (entry.marketprice * 0.1).toFixed(2)); // Convert EUR/MWh to ct/kWh
             const gridFees = data.map((entry) => getGridFee(selectedOptionText, entry.start_timestamp)); // Constant grid fee for all entries
-            const elektrizitatsabgabe = data.map(() => elektrizitatsabgabePerKWh.toFixed(2)); // Fixed value per kWh
+            data.map((entry) => getElektrizitatsabgabePerKWh(entry.start_timestamp).toFixed(2));
             const providerFees = calculateProviderFees(marketPrices, provider);
 
             const totalPrices = marketPrices.map((marketPrice, index) =>
