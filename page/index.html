@@ -346,9 +346,13 @@ SOFTWARE.
         }
         const startDate = new Date("2022-04-01");
         const endDate = new Date("2024-12-31");
+        const elektrizitatsabgabe = 1.5;
+        const oekostromfoerderbetrag_arbeit = 0.00737;
+        const oekostromfoerderbetrag_verlust = 0.0059
+
         const getElektrizitatsabgabePerKWh = (date) => {
             const targetDate = new Date(date);
-            return targetDate >= startDate && targetDate <= endDate ? 0.1 : 1.5;
+            return targetDate >= startDate && targetDate <= endDate ? 0.1 : (oekostromfoerderbetrag_arbeit + oekostromfoerderbetrag_verlust + elektrizitatsabgabe);
         };
         function updatePricesWithGridFee() {
             const elektrizitatsabgabePerKWh = 0.1;
