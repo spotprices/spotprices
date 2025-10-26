@@ -33,6 +33,21 @@ jobs:
       - name: Fetch and Update Cached Data
         run: node prefetch.js
 
+      # Copy updated data to backup folder
+      - name: Copy Data to Backup Folder
+        run: |
+          cp page/cached-data-austria.json backup/cached-data-austria.json
+          cp page/cached-data-germany.json backup/cached-data-germany.json
+
+      # Commit and push changes to keep workflow active
+      - name: Commit and Push Changes
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add backup/
+          git diff --staged --quiet || git commit -m "Update cached data - $(date +'%Y-%m-%d %H:%M:%S UTC')"
+          git push
+
       # Deploy updated data to GitHub Pages
       - name: Setup Pages
         uses: actions/configure-pages@v5
