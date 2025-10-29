@@ -2,7 +2,7 @@ name: Update Cached Data
 
 on:
   schedule:
-    - cron: "0 13 * * *" # Run daily at 14:00 Vienna time
+    - cron: "0 14 * * *" # should run after 14:00 Vienna time to get the latest day ahead prices
   workflow_dispatch: # Allow manual trigger if needed
 
 permissions:
