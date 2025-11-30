@@ -100,7 +100,7 @@ SOFTWARE.
     <p>Select a country, region, and a date range to fetch the energy price data:</p>
 
     <label for="country">Country:</label>
-    <select id="country">
+    <select id="country" onchange="fetchData()">
         <option value="Austria">Austria</option>
         <option value="Germany">Germany</option>
     </select>
@@ -131,9 +131,9 @@ SOFTWARE.
     </select>
 
     <label for="start-date">Start Date:</label>
-    <input type="date" id="start-date">
+    <input type="date" id="start-date" onchange="fetchData()">
     <label for="end-date">End Date:</label>
-    <input type="date" id="end-date">
+    <input type="date" id="end-date" onchange="fetchData()">
     <button onclick="fetchData()">Fetch Data</button>
     <button onclick="resetZoom()">Reset Zoom</button>
 
@@ -250,6 +250,8 @@ SOFTWARE.
             document.getElementById('end-date').value = tomorrow.toISOString().split('T')[0];
             // Adjust chart container height to fit the viewport
             adjustChartHeight();
+            // Automatically fetch data on page load
+            fetchData();
         };
 
         function adjustChartHeight() {
