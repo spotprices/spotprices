@@ -1,7 +1,7 @@
 import fetch from 'node-fetch';
 import fs from 'fs';
 import path from 'path';
-import { DateTime } from 'luxon';
+import {DateTime} from 'luxon';
 
 // Define CET timezone
 const CET = 'Europe/Berlin';
@@ -66,8 +66,7 @@ function getLatestEndTimestamp(data) {
 
 async function fetchAndSaveDataForCountry(country) {
     const existingData = await fetchExistingData(country);
-    const latestEndTimestamp = getLatestEndTimestamp(existingData);
-    const newStartTimestamp = latestEndTimestamp;
+    const newStartTimestamp = getLatestEndTimestamp(existingData);
 
     const jsonPath = path.join(outputDir, `${FILE_NAME_COMMON_PART}${country.name.toLowerCase()}.json`)
 
