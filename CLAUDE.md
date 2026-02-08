@@ -28,17 +28,20 @@ There are no test or lint commands configured. The project has no build step —
 
 ### Frontend
 
-`page/index.html` is a self-contained single-page application (all JS inline):
-- Loads cached JSON data on page load; falls back to live API calls for missing ranges
-- Renders a stacked bar chart (Chart.js via CDN) showing price breakdown per hour
-- Displays a paginated data table (50 rows/page)
-- Price components are stacked: market price → grid fees → provider fees → electricity tax → VAT
+`page/index.html` is the single-page application, with JS split into `page/js/`:
+- `gridfees.js` — loads grid fee data from the gridfees API, maps dates to amendment years and tariff periods
+- `pricing.js` — provider fee calculation, electricity tax with date-dependent rates
+- `chart.js` — Chart.js stacked bar chart rendering, zoom/pan, current-hour highlighting
+- `table.js` — paginated data table (50 rows/page)
+- `app.js` — init, fetchData, cached data management, price assembly, event wiring
+
+No bundler — plain `<script>` tags loaded in dependency order. Chart.js and chartjs-plugin-zoom via CDN.
 
 ### Price Calculation Model
 
 Each hourly price is composed of:
 - **Market price**: from API (EUR/MWh, converted to ct/kWh by ÷10)
-- **Grid fees**: fetched from `https://spotprices.github.io/gridfees/v1/all.json` (Netzebene 7 nicht gemessen), computed as `arbeitspreis + netzverlustentgelt + leistungspreis / 3500`
+- **Grid fees**: fetched from `https://spotprices.github.io/gridfees/v1/all.json` (Netzebene 7 nicht gemessen), variable cost only: `arbeitspreis + netzverlustentgelt`
 - **Provider fees**: aWATTar (1.5 ct/kWh + 3% markup) or SmartEnergy (1.2 ct/kWh flat)
 - **Electricity tax**: 1.5 ct/kWh standard, with special reduced rates for 2022–2024
 - **VAT**: calculated as total ÷ 6
@@ -54,4 +57,4 @@ Grid fees vary by Austrian region and year. The gridfees API provides tariff-per
 - All timestamps are Unix milliseconds; display uses Luxon with `Europe/Berlin` timezone
 - Cached data JSON format: array of `{ start_timestamp, end_timestamp, marketprice }` (marketprice in EUR/MWh)
 - The prefetch script fetches up to 20 years of lookback data, using the cache's latest timestamp to avoid re-fetching
-- No framework or bundler — frontend changes go directly in `page/index.html`
+- No framework or bundler — frontend JS lives in `page/js/`, loaded as plain script tags
