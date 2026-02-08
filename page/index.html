@@ -161,77 +161,70 @@ SOFTWARE.
     </div>
 
     <script>
-        const gridFees2024 = {
-            endDate: "2024-12-31",
-            startDate: "2024-01-01",
-            "Kleinwalsertal": 17.9,
-            "Kärnten": 10.26,
-            "Steiermark": 8.43,
-            "Oberösterreich": 6.48,
-            "Innsbruck": 9.58,
-            "Burgenland": 6.98,
-            "Klagenfurt": 7.64,
-            "Niederösterreich": 7.58,
-            "Salzburg": 8.22,
-            "Wien": 7.19,
-            "Tirol": 7.25,
-            "Graz": 7.84,
-            "Linz": 5.94,
-            "Vorarlberg": 5.93,
-        };
-        const gridFees2025 = {
-            startDate: "2025-01-01",
-            endDate: "9999-12-31",
-            "Kleinwalsertal": 17.9 * 1.33,
-            "Kärnten": 11.77,
-            "Steiermark": 10.87,
-            "Oberösterreich": 8.15,
-            "Innsbruck": 10.03,
-            "Burgenland": 8.62,
-            "Klagenfurt": 9.37,
-            "Niederösterreich": 10.01,
-            "Salzburg": 9.33,
-            "Wien": 9.46,
-            "Tirol": 7.85,
-            "Graz": 7.48,
-            "Linz": 7.06,
-            "Vorarlberg": 7.06,
-        };
-        const gridFees2023 = {
-            endDate: "2023-12-31",
-            startDate: "2023-01-01",
-            "Kleinwalsertal": 14.82,
-            "Kärnten": 10.58,
-            "Steiermark": 9.46,
-            "Oberösterreich": 8.67,
-            "Innsbruck": 9.65,
-            "Burgenland": 9.33,
-            "Klagenfurt": 8.22,
-            "Niederösterreich": 8.62,
-            "Salzburg": 8.04,
-            "Wien": 8.94,
-            "Tirol": 8.74,
-            "Graz": 8.88,
-            "Linz": 6.56,
-            "Vorarlberg": 6.39,
-        };
+        const ASSUMED_ANNUAL_CONSUMPTION_KWH = 3500;
+        let gridFeesData = null; // Will be loaded from gridfees API
 
-        const gridFees = [gridFees2023, gridFees2024, gridFees2025];
+        async function loadGridFees() {
+            try {
+                const response = await fetch('https://spotprices.github.io/gridfees/v1/all.json');
+                if (!response.ok) throw new Error(`Failed to load grid fees: ${response.statusText}`);
+                gridFeesData = await response.json();
+                console.log('Grid fees loaded from API.');
+            } catch (error) {
+                console.error('Error loading grid fees:', error);
+            }
+        }
+
+        // Map a date to the correct amendment key
+        function getAmendmentKey(date) {
+            const d = new Date(date);
+            const year = d.getFullYear();
+            const month = d.getMonth() + 1; // 1-based
+            if (!gridFeesData) return null;
+            const keys = Object.keys(gridFeesData.amendments);
+            // Special case: 2023 has two amendments (2023_1 for Jan-Feb, 2023_2 for Mar-Dec)
+            if (year === 2023) {
+                return month <= 2 && keys.includes('2023_1') ? '2023_1' : (keys.includes('2023_2') ? '2023_2' : null);
+            }
+            const yearStr = String(year);
+            if (keys.includes(yearStr)) return yearStr;
+            // Fallback: use the latest available amendment
+            const numericKeys = keys.map(k => parseInt(k)).filter(n => !isNaN(n)).sort((a, b) => b - a);
+            if (numericKeys.length > 0 && year > numericKeys[0]) return String(numericKeys[0]);
+            return null;
+        }
+
+        // Determine tariff period from a timestamp: SHT, SNT, WHT, WNT
+        function getTariffPeriod(date) {
+            const d = new Date(date);
+            const month = d.getMonth() + 1; // 1-based
+            const hour = d.getHours();
+            const isSummer = month >= 4 && month <= 9;
+            const isHighTariff = hour >= 6 && hour < 22;
+            if (isSummer) return isHighTariff ? 'SHT' : 'SNT';
+            return isHighTariff ? 'WHT' : 'WNT';
+        }
 
         function getGridFee(region, date) {
-            const targetDate = new Date(date);
+            if (!gridFeesData) return null;
+            const key = getAmendmentKey(date);
+            if (!key) return null;
+            const amendment = gridFeesData.amendments[key];
+            if (!amendment || !amendment.netzebene_7_nicht_gemessen) return null;
 
-            for (const gridFeePeriod of gridFees) {
-                const startDate = new Date(gridFeePeriod.startDate);
-                const endDate = new Date(gridFeePeriod.endDate);
+            const entry = amendment.netzebene_7_nicht_gemessen.find(e => e.region === region);
+            if (!entry) return null;
 
-                // Check if the date is within the range for the current grid fee period
-                if (targetDate >= startDate && targetDate <= endDate) {
-                    return gridFeePeriod[region] || null; // Return the grid fee for the region, or null if not found
-                }
-            }
+            const tariff = getTariffPeriod(date);
+            const arbeitspreis = entry.netznutzungsentgelt.arbeitspreis_cent_per_kwh;
+            const netzverlust = entry.netzverlustentgelt_cent_per_kwh;
+            const leistungspreis = entry.netznutzungsentgelt.leistungspreis_cent_per_kw || 0;
 
-            return null; // Return null if no matching period is found
+            // arbeitspreis/netzverlust can be a flat number or an object with SHT/SNT/WHT/WNT
+            const arb = typeof arbeitspreis === 'object' ? (arbeitspreis[tariff] ?? arbeitspreis.SHT) : arbeitspreis;
+            const net = typeof netzverlust === 'object' ? (netzverlust[tariff] ?? netzverlust.SHT) : netzverlust;
+
+            return arb + net + leistungspreis / ASSUMED_ANNUAL_CONSUMPTION_KWH;
         }
 
         let cachedData = {};
@@ -241,7 +234,7 @@ SOFTWARE.
         const rowsPerPage = 50;
 
         // Set default values for date inputs
-        window.onload = () => {
+        window.onload = async () => {
             const today = new Date();
             const tomorrow = new Date();
             tomorrow.setDate(today.getDate() + 1); // Add one day to get tomorrow
@@ -250,6 +243,8 @@ SOFTWARE.
             document.getElementById('end-date').value = tomorrow.toISOString().split('T')[0];
             // Adjust chart container height to fit the viewport
             adjustChartHeight();
+            // Load grid fees from API before fetching price data
+            await loadGridFees();
             // Automatically fetch data on page load
             fetchData();
         };
