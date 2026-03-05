@@ -94,7 +94,8 @@ function updatePricesWithGridFee() {
     const marketPrices = data.map(entry => (entry.marketprice * 0.1).toFixed(2));
     const gridFees = data.map(entry => getGridFee(selectedOptionText, entry.start_timestamp));
     const elektrizitatsabgabe = data.map(entry => getElektrizitaetsabgabe(entry.start_timestamp).toFixed(2));
-    const providerFees = calculateProviderFees(marketPrices, provider);
+    const timestamps = data.map(entry => entry.start_timestamp);
+    const providerFees = calculateProviderFees(marketPrices, provider, timestamps);
 
     const totalPrices = marketPrices.map((marketPrice, index) =>
         (parseFloat(marketPrice) + gridFees[index] + parseFloat(elektrizitatsabgabe[index]) + parseFloat(providerFees[index])) * 1.2

@@ -15,11 +15,16 @@ function getElektrizitaetsabgabe(date) {
     return OEKOSTROMFOERDERBETRAG_ARBEIT + OEKOSTROMFOERDERBETRAG_VERLUST + abgabe;
 }
 
-function calculateProviderFees(marketPrices, provider) {
-    return marketPrices.map(marketPrice => {
+const AWATTAR_NO_MARKUP_START = new Date("2026-04-01");
+
+function calculateProviderFees(marketPrices, provider, timestamps) {
+    return marketPrices.map((marketPrice, i) => {
         switch (provider) {
-            case 'awattar':
-                return (parseFloat(marketPrice) * 0.03 + 1.5).toFixed(2); // 3% of market price + 1.5 ct
+            case 'awattar': {
+                const date = timestamps ? new Date(timestamps[i]) : new Date(0);
+                const markup = date >= AWATTAR_NO_MARKUP_START ? 0 : parseFloat(marketPrice) * 0.03;
+                return (markup + 1.5).toFixed(2); // 3% markup until 2026-04-01, then flat 1.5 ct
+            }
             case 'smartenergy':
                 return 1.2.toFixed(2); // Fixed 1.2 ct
             default:
