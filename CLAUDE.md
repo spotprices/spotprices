@@ -42,8 +42,8 @@ No bundler — plain `<script>` tags loaded in dependency order. Chart.js and ch
 Each hourly price is composed of:
 - **Market price**: from API (EUR/MWh, converted to ct/kWh by ÷10)
 - **Grid fees**: fetched from `https://spotprices.github.io/gridfees/v1/all.json` (Netzebene 7 nicht gemessen), variable cost only: `arbeitspreis + netzverlustentgelt`
-- **Provider fees**: aWATTar (1.5 ct/kWh + 3% markup) or SmartEnergy (1.2 ct/kWh flat)
-- **Electricity tax**: 1.5 ct/kWh standard, with special reduced rates for 2022–2024
+- **Provider fees**: aWATTar (1.5 ct/kWh + 3% markup until 2026-03-31; flat 1.5 ct/kWh from 2026-04-01) or SmartEnergy (1.2 ct/kWh flat)
+- **Electricity tax**: 1.5 ct/kWh standard, with special reduced rates for 2022–2024 and from 2026-01-01 (0.1 ct/kWh)
 - **VAT**: calculated as total ÷ 6
 
 Grid fees vary by Austrian region and year. The gridfees API provides tariff-period-aware rates (SHT/SNT/WHT/WNT = summer/winter × high/low tariff) and covers amendments from 2015–2026. The `spotprices/gridfees` repo is the upstream source.
