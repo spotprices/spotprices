@@ -18,12 +18,12 @@ jobs:
       # Checkout the repository
       - name: Checkout Repository
         uses: actions/checkout@v4
-  
+
       # Set up Node.js
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: "16" # Specify your Node.js version
+          node-version: "20"
 
       # Install dependencies
       - name: Install Dependencies
@@ -53,7 +53,7 @@ jobs:
         uses: actions/configure-pages@v5
 
       - name: Upload Selected Files
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         with:
           path: ./page
 
