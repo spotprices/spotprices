@@ -10,6 +10,9 @@ permissions:
   pages: write # Allow GitHub Pages deployment
   id-token: write # Allow OpenID Connect for GitHub Pages deployment
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   update-data:
     runs-on: ubuntu-latest
