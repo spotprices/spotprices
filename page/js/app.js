@@ -1,6 +1,14 @@
 let cachedData = {};
 let data = [];
 
+function showLoading() {
+    document.getElementById('loading-overlay').classList.add('active');
+}
+
+function hideLoading() {
+    document.getElementById('loading-overlay').classList.remove('active');
+}
+
 window.onload = async () => {
     const today = new Date();
     const tomorrow = new Date();
@@ -9,6 +17,7 @@ window.onload = async () => {
     document.getElementById('start-date').value = today.toISOString().split('T')[0];
     document.getElementById('end-date').value = tomorrow.toISOString().split('T')[0];
     adjustChartHeight();
+    showLoading();
     await loadGridFees();
     fetchData();
 };
@@ -16,9 +25,9 @@ window.onload = async () => {
 function adjustChartHeight() {
     const viewportHeight = window.innerHeight;
     const headerHeight = document.querySelector("h1").offsetHeight;
-    const controlsHeight = document.querySelector("p").offsetHeight + 40;
-    const availableHeight = viewportHeight - headerHeight - controlsHeight - 100;
-    document.getElementById('chart-container').style.height = `${availableHeight}px`;
+    const controlsHeight = document.querySelector(".controls").offsetHeight + 40;
+    const availableHeight = viewportHeight - headerHeight - controlsHeight - 160;
+    document.getElementById('chart-container').style.height = `${Math.max(300, availableHeight)}px`;
 }
 
 async function fetchData() {
@@ -28,6 +37,8 @@ async function fetchData() {
 
     const startTimestamp = new Date(startDate).getTime();
     const endTimestamp = new Date(new Date(endDate).setHours(23, 59, 59, 999)).getTime() + 1000;
+
+    showLoading();
 
     if (!cachedData[country]) {
         console.log(`Loading cached data for ${country}...`);
@@ -52,6 +63,7 @@ async function fetchData() {
     );
 
     if (cachedResults.length === 0 && cachedData[country].length > 0) {
+        hideLoading();
         alert("No data available for the selected date range.");
         return;
     }
@@ -62,6 +74,8 @@ async function fetchData() {
         currentPage = 1;
         updatePricesWithGridFee();
         updateTable();
+        hideLoading();
+        applyFadeIn();
         return;
     }
 
@@ -81,7 +95,10 @@ async function fetchData() {
         currentPage = 1;
         updatePricesWithGridFee();
         updateTable();
+        hideLoading();
+        applyFadeIn();
     } catch (error) {
+        hideLoading();
         alert(`Error: ${error.message}`);
     }
 }
@@ -102,7 +119,55 @@ function updatePricesWithGridFee() {
     );
     const tax = totalPrices.map(totalPrice => totalPrice / 6.0);
 
+    updateCurrentPriceCard(data, marketPrices, gridFees, elektrizitatsabgabe, providerFees, totalPrices);
     renderChart(data, marketPrices, gridFees, elektrizitatsabgabe, providerFees, totalPrices, tax);
+}
+
+function updateCurrentPriceCard(data, marketPrices, gridFees, elektrizitatsabgabe, providerFees, totalPrices) {
+    const card = document.getElementById('current-price-card');
+    const now = new Date();
+    const currentHour = now.getHours();
+    const currentDay = now.getDate();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+
+    const index = data.findIndex(entry => {
+        const d = new Date(entry.start_timestamp);
+        return d.getHours() === currentHour && d.getDate() === currentDay &&
+               d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+    });
+
+    if (index === -1 || isNaN(totalPrices[index])) {
+        card.classList.remove('visible');
+        return;
+    }
+
+    const total = totalPrices[index].toFixed(2);
+    const market = parseFloat(marketPrices[index]).toFixed(2);
+    const grid = gridFees[index] != null ? gridFees[index].toFixed(2) : '--';
+    const elekAbg = parseFloat(elektrizitatsabgabe[index]).toFixed(2);
+    const prov = parseFloat(providerFees[index]).toFixed(2);
+
+    document.getElementById('current-price-amount').textContent = total;
+    document.getElementById('current-price-breakdown').innerHTML =
+        `<span>Market: ${market}</span>` +
+        `<span>Grid: ${grid}</span>` +
+        `<span>Tax & fees: ${elekAbg}</span>` +
+        `<span>Provider: ${prov}</span>`;
+
+    card.classList.add('visible');
+}
+
+function applyFadeIn() {
+    const elements = [
+        document.getElementById('chart-container'),
+        document.getElementById('data-table')
+    ];
+    elements.forEach(el => {
+        el.classList.remove('fade-in');
+        void el.offsetWidth; // force reflow
+        el.classList.add('fade-in');
+    });
 }
 
 window.addEventListener('resize', adjustChartHeight);

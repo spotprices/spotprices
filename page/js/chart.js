@@ -1,5 +1,14 @@
 let chart;
 
+const chartColors = {
+    tax:          { bg: 'rgba(148,163,184,0.5)', border: 'rgba(148,163,184,1)' },
+    grid:         { bg: 'rgba(249,115,22,0.55)',  border: 'rgba(249,115,22,1)' },
+    market:       { bg: 'rgba(59,130,246,0.55)',   border: 'rgba(59,130,246,1)' },
+    marketNow:    { bg: 'rgba(16,185,129,0.7)',    border: 'rgba(16,185,129,1)' },
+    provider:     { bg: 'rgba(139,92,246,0.5)',    border: 'rgba(139,92,246,1)' },
+    electricity:  { bg: 'rgba(234,179,8,0.5)',     border: 'rgba(234,179,8,1)' },
+};
+
 function renderChart(data, marketPrices, gridFees, elektrizitatsabgabe, providerFees, totalPrices, tax) {
     const labels = data.map(entry =>
         new Date(entry.start_timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })
@@ -15,9 +24,18 @@ function renderChart(data, marketPrices, gridFees, elektrizitatsabgabe, provider
         const entryDate = new Date(entry.start_timestamp);
         if (entryDate.getHours() === currentHour && entryDate.getDate() === currentDay &&
             entryDate.getMonth() === currentMonth && entryDate.getFullYear() === currentYear) {
-            return 'rgba(255, 99, 132, 0.5)'; // Highlight current hour
+            return chartColors.marketNow.bg;
         }
-        return 'rgba(54, 162, 235, 0.5)';
+        return chartColors.market.bg;
+    });
+
+    const borderColors = data.map(entry => {
+        const entryDate = new Date(entry.start_timestamp);
+        if (entryDate.getHours() === currentHour && entryDate.getDate() === currentDay &&
+            entryDate.getMonth() === currentMonth && entryDate.getFullYear() === currentYear) {
+            return chartColors.marketNow.border;
+        }
+        return chartColors.market.border;
     });
 
     const ctx = document.getElementById('price-chart').getContext('2d');
@@ -34,36 +52,36 @@ function renderChart(data, marketPrices, gridFees, elektrizitatsabgabe, provider
                 {
                     label: 'Elektrizitätsabgabe (ct/kWh)',
                     data: elektrizitatsabgabe,
-                    backgroundColor: 'rgba(255, 206, 86, 0.5)',
-                    borderColor: 'rgba(255, 206, 86, 1)',
+                    backgroundColor: chartColors.electricity.bg,
+                    borderColor: chartColors.electricity.border,
                     borderWidth: 1
                 },
                 {
                     label: 'Grid Fee (ct/kWh)',
                     data: gridFees,
-                    backgroundColor: 'rgba(255, 99, 132, 0.5)',
-                    borderColor: 'rgba(255, 99, 132, 1)',
+                    backgroundColor: chartColors.grid.bg,
+                    borderColor: chartColors.grid.border,
                     borderWidth: 1
                 },
                 {
                     label: 'Market Price (ct/kWh)',
                     data: marketPrices,
                     backgroundColor: backgroundColors,
-                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderColor: borderColors,
                     borderWidth: 1
                 },
                 {
                     label: 'Provider Fee (ct/kWh)',
                     data: providerFees,
-                    backgroundColor: 'rgba(153, 102, 255, 0.5)',
-                    borderColor: 'rgba(153, 102, 255, 1)',
+                    backgroundColor: chartColors.provider.bg,
+                    borderColor: chartColors.provider.border,
                     borderWidth: 1
                 },
                 {
                     label: 'Tax',
                     data: tax,
-                    backgroundColor: 'rgba(75, 192, 192, 0.5)',
-                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: chartColors.tax.bg,
+                    borderColor: chartColors.tax.border,
                     borderWidth: 1
                 }
             ]
@@ -71,17 +89,34 @@ function renderChart(data, marketPrices, gridFees, elektrizitatsabgabe, provider
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            animation: {
+                duration: 600,
+                easing: 'easeOutQuart'
+            },
             plugins: {
                 tooltip: {
+                    mode: 'index',
                     callbacks: {
+                        title: function (tooltipItems) {
+                            const index = tooltipItems[0].dataIndex;
+                            const entry = data[index];
+                            const d = new Date(entry.start_timestamp);
+                            const date = d.toLocaleDateString();
+                            const time = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+                            const endTime = new Date(entry.end_timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+                            return `${date}  ${time} – ${endTime}`;
+                        },
                         label: function (tooltipItem) {
                             const index = tooltipItem.dataIndex;
-                            const entry = data[index];
-                            const date = new Date(entry.start_timestamp).toLocaleDateString();
-                            const time = new Date(entry.start_timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
-                            const price = (totalPrices[index]).toFixed(2);
-                            const marketPrice = (marketPrices[index]);
-                            return `Date: ${date}, Time: ${time}, Price: ${price} ct/kWh, Marketprice: ${marketPrice} ct/kWh, provider: ${providerFees[index]} ct/kWh`;
+                            const val = parseFloat(tooltipItem.raw);
+                            if (isNaN(val)) return null;
+                            return `  ${tooltipItem.dataset.label}: ${val.toFixed(2)} ct/kWh`;
+                        },
+                        afterBody: function (tooltipItems) {
+                            const index = tooltipItems[0].dataIndex;
+                            const total = totalPrices[index];
+                            if (isNaN(total)) return '';
+                            return `\n  Total (incl. VAT): ${total.toFixed(2)} ct/kWh`;
                         }
                     }
                 },

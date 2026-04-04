@@ -8,17 +8,173 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
     <style>
+        :root {
+            --bg: #f5f7fa;
+            --surface: #ffffff;
+            --text: #1a1a2e;
+            --text-secondary: #555;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --border: #e2e8f0;
+            --border-hover: #cbd5e1;
+            --radius: 8px;
+            --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #0f172a;
+                --surface: #1e293b;
+                --text: #e2e8f0;
+                --text-secondary: #94a3b8;
+                --accent: #60a5fa;
+                --accent-hover: #3b82f6;
+                --border: #334155;
+                --border-hover: #475569;
+                --shadow: 0 1px 3px rgba(0,0,0,0.3);
+                --shadow-md: 0 4px 6px rgba(0,0,0,0.3);
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            padding: 24px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+        }
+
+        .controls {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 20px;
+            margin-bottom: 24px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+            align-items: end;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .control-group label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        select, input[type="date"] {
+            appearance: none;
+            -webkit-appearance: none;
+            background: var(--surface);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 0.9rem;
+            font-family: inherit;
+            cursor: pointer;
+            transition: border-color 0.15s, box-shadow 0.15s;
+            width: 100%;
+        }
+
+        select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            padding-right: 30px;
+        }
+
+        select:hover, input[type="date"]:hover {
+            border-color: var(--border-hover);
+        }
+
+        select:focus, input[type="date"]:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 8px;
+            align-items: end;
+        }
+
+        button {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 18px;
+            font-size: 0.9rem;
+            font-family: inherit;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.15s, box-shadow 0.15s;
+            white-space: nowrap;
+        }
+
+        button:hover {
+            background: var(--accent-hover);
+            box-shadow: var(--shadow);
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        button.secondary {
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        button.secondary:hover {
+            background: var(--bg);
+            border-color: var(--border-hover);
         }
 
         #chart-container {
-            margin-top: 20px;
-            margin-bottom: 40px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 16px;
+            margin-bottom: 24px;
             display: flex;
             justify-content: center;
             align-items: center;
+            position: relative;
         }
 
         canvas {
@@ -28,44 +184,219 @@
 
         table {
             width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
+            border-collapse: separate;
+            border-spacing: 0;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
         }
 
-        th,
-        td {
-            border: 1px solid #ddd;
+        th, td {
             text-align: left;
-            padding: 8px;
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
         }
 
         th {
-            background-color: #f4f4f4;
+            background: var(--bg);
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            color: var(--text-secondary);
+            position: sticky;
+            top: 0;
         }
 
-        button {
-            padding: 8px 16px;
-            margin: 0 5px;
-            cursor: pointer;
+        tbody tr:hover {
+            background: rgba(59,130,246,0.04);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            tbody tr:hover {
+                background: rgba(96,165,250,0.06);
+            }
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        tbody tr:nth-child(even) {
+            background: rgba(0,0,0,0.015);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            tbody tr:nth-child(even) {
+                background: rgba(255,255,255,0.02);
+            }
         }
 
         #pagination {
-            margin-top: 20px;
+            margin-top: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+        }
+
+        #pagination button {
+            padding: 6px 14px;
+            font-size: 0.85rem;
+        }
+
+        #page-info {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            min-width: 80px;
             text-align: center;
         }
 
         footer {
             margin-top: 40px;
             text-align: center;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            padding: 20px 0;
+            border-top: 1px solid var(--border);
         }
 
         footer a {
             text-decoration: none;
-            color: blue;
+            color: var(--accent);
         }
 
         footer a:hover {
             text-decoration: underline;
+        }
+
+        .current-price-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 20px 24px;
+            margin-bottom: 24px;
+            display: none;
+            align-items: baseline;
+            gap: 16px;
+            flex-wrap: wrap;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .current-price-card.visible {
+            display: flex;
+            opacity: 1;
+        }
+
+        .current-price-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            color: var(--text-secondary);
+        }
+
+        .current-price-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--accent);
+            line-height: 1;
+        }
+
+        .current-price-unit {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        .current-price-breakdown {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-left: auto;
+        }
+
+        .current-price-breakdown span {
+            margin-right: 12px;
+            white-space: nowrap;
+        }
+
+        .loading-overlay {
+            position: absolute;
+            inset: 0;
+            background: var(--surface);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius);
+            z-index: 10;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .loading-overlay.active {
+            opacity: 0.85;
+            pointer-events: auto;
+        }
+
+        .spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.4s ease both;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 640px) {
+            body {
+                padding: 16px;
+            }
+
+            h1 {
+                font-size: 1.4rem;
+            }
+
+            .controls {
+                grid-template-columns: 1fr;
+                padding: 16px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .button-group button {
+                width: 100%;
+            }
+
+            .current-price-card {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+
+            .current-price-breakdown {
+                margin-left: 0;
+            }
         }
     </style>
 </head>
@@ -97,47 +428,74 @@ SOFTWARE.
 -->
 
     <h1>Energy Price Navigator</h1>
-    <p>Select a country, region, and a date range to fetch the energy price data:</p>
+    <p class="subtitle">Austrian & German electricity spot market prices with grid fees, taxes, and provider costs.</p>
 
-    <label for="country">Country:</label>
-    <select id="country" onchange="fetchData()">
-        <option value="Austria">Austria</option>
-        <option value="Germany">Germany</option>
-    </select>
+    <div class="controls">
+        <div class="control-group">
+            <label for="country">Country</label>
+            <select id="country" onchange="fetchData()">
+                <option value="Austria">Austria</option>
+                <option value="Germany">Germany</option>
+            </select>
+        </div>
 
-    <label for="region">Region:</label>
-    <select id="region" onchange="fetchData()">
-        <option>None</option>
-        <option>Steiermark</option>
-        <option>Niederösterreich</option>
-        <option>Wien</option>
-        <option>Oberösterreich</option>
-        <option>Burgenland</option>
-        <option>Kärnten</option>
-        <option>Vorarlberg</option>
-        <option>Salzburg</option>
-        <option>Tirol</option>
-        <option>Klagenfurt</option>
-        <option selected>Linz</option>
-        <option>Innsbruck</option>
-        <option>Graz</option>
-    </select>
+        <div class="control-group">
+            <label for="region">Region</label>
+            <select id="region" onchange="fetchData()">
+                <option>None</option>
+                <option>Steiermark</option>
+                <option>Niederösterreich</option>
+                <option>Wien</option>
+                <option>Oberösterreich</option>
+                <option>Burgenland</option>
+                <option>Kärnten</option>
+                <option>Vorarlberg</option>
+                <option>Salzburg</option>
+                <option>Tirol</option>
+                <option>Klagenfurt</option>
+                <option selected>Linz</option>
+                <option>Innsbruck</option>
+                <option>Graz</option>
+            </select>
+        </div>
 
-    <label for="provider">Electricity Provider:</label>
-    <select id="provider" onchange="fetchData()">
-        <option value="none">None</option>
-        <option value="awattar" selected>aWATTar (1.5 ct, until 03/2026 +3% of market price)</option>
-        <option value="smartenergy">SmartEnergy (1.2 ct)</option>
-    </select>
+        <div class="control-group">
+            <label for="provider">Electricity Provider</label>
+            <select id="provider" onchange="fetchData()">
+                <option value="none">None</option>
+                <option value="awattar" selected>aWATTar (1.5 ct, until 03/2026 +3% of market price)</option>
+                <option value="smartenergy">SmartEnergy (1.2 ct)</option>
+            </select>
+        </div>
 
-    <label for="start-date">Start Date:</label>
-    <input type="date" id="start-date" onchange="fetchData()">
-    <label for="end-date">End Date:</label>
-    <input type="date" id="end-date" onchange="fetchData()">
-    <button onclick="fetchData()">Fetch Data</button>
-    <button onclick="resetZoom()">Reset Zoom</button>
+        <div class="control-group">
+            <label for="start-date">Start Date</label>
+            <input type="date" id="start-date" onchange="fetchData()">
+        </div>
+
+        <div class="control-group">
+            <label for="end-date">End Date</label>
+            <input type="date" id="end-date" onchange="fetchData()">
+        </div>
+
+        <div class="control-group button-group">
+            <button onclick="fetchData()">Fetch Data</button>
+            <button class="secondary" onclick="resetZoom()">Reset Zoom</button>
+        </div>
+    </div>
+
+    <div id="current-price-card" class="current-price-card">
+        <div>
+            <div class="current-price-label">Current Price</div>
+            <div class="current-price-value"><span id="current-price-amount">--</span> <span class="current-price-unit">ct/kWh</span></div>
+        </div>
+        <div class="current-price-breakdown" id="current-price-breakdown"></div>
+    </div>
 
     <div id="chart-container">
+        <div class="loading-overlay" id="loading-overlay">
+            <div class="spinner"></div>
+        </div>
         <canvas id="price-chart"></canvas>
     </div>
 
@@ -150,14 +508,13 @@ SOFTWARE.
             </tr>
         </thead>
         <tbody>
-            <!-- Data will be dynamically inserted here -->
         </tbody>
     </table>
 
     <div id="pagination">
-        <button onclick="prevPage()">Previous</button>
+        <button class="secondary" onclick="prevPage()">Previous</button>
         <span id="page-info">Page: 1</span>
-        <button onclick="nextPage()">Next</button>
+        <button class="secondary" onclick="nextPage()">Next</button>
     </div>
 
     <script src="js/gridfees.js"></script>
