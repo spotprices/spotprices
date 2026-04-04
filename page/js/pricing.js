@@ -1,7 +1,8 @@
 // Electricity tax (Elektrizitätsabgabe) — reduced rate during 2022-04-01 to 2024-12-31 and from 2026-01-01 onwards
 const ELEKTRIZITAETSABGABE = 1.5; // ct/kWh standard
-const OEKOSTROMFOERDERBETRAG_ARBEIT = 0.00737;
-const OEKOSTROMFOERDERBETRAG_VERLUST = 0.0059;
+const OEKOSTROMFOERDERBETRAG_ARBEIT = 0.737; // ct/kWh
+const OEKOSTROMFOERDERBETRAG_VERLUST = 0.059; // ct/kWh
+
 const REDUCED_TAX_START = new Date("2022-04-01");
 const REDUCED_TAX_END = new Date("2024-12-31");
 const REDUCED_TAX_START_2026 = new Date("2026-01-01");
