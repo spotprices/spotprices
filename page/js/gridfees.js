@@ -31,14 +31,39 @@ function getAmendmentKey(date) {
 }
 
 // Determine tariff period from a timestamp: SHT, SNT, WHT, WNT
+// Summer (Apr-Sep): SHT = 06:00-10:00 and 16:00-22:00; SNT = 10:00-16:00 and 22:00-06:00 (midday valley)
+// Winter (Oct-Mar): WHT = 06:00-22:00; WNT = 22:00-06:00
 function getTariffPeriod(date) {
     const d = new Date(date);
     const month = d.getMonth() + 1;
     const hour = d.getHours();
     const isSummer = month >= 4 && month <= 9;
+    if (isSummer) {
+        const isHighTariff = (hour >= 6 && hour < 10);
+        return isHighTariff ? 'SHT' : 'SNT';
+    }
     const isHighTariff = hour >= 6 && hour < 22;
-    if (isSummer) return isHighTariff ? 'SHT' : 'SNT';
     return isHighTariff ? 'WHT' : 'WNT';
+}
+
+// Resolve a rate value that may be a number, seasonal object (SHT/SNT/WHT/WNT), or simple object (AP/SNAP)
+function resolveRate(rate, date) {
+    if (typeof rate === 'number') return rate;
+    if (typeof rate !== 'object' || rate === null) return null;
+    // Simple format (2026+): AP with optional SNAP (Apr-Sep 10:00-16:00)
+    if ('AP' in rate) {
+        if ('SNAP' in rate && rate.SNAP != null) {
+            const d = new Date(date);
+            const month = d.getMonth() + 1;
+            const hour = d.getHours();
+            const isSNAP = month >= 4 && month <= 9 && hour >= 10 && hour < 16;
+            return isSNAP ? rate.SNAP : rate.AP;
+        }
+        return rate.AP;
+    }
+    // Seasonal format (2015-2025)
+    const tariff = getTariffPeriod(date);
+    return rate[tariff] ?? rate.SHT;
 }
 
 function getGridFee(region, date) {
@@ -51,13 +76,15 @@ function getGridFee(region, date) {
     const entry = amendment.netzebene_7_nicht_gemessen.find(e => e.region === region);
     if (!entry) return null;
 
-    const tariff = getTariffPeriod(date);
     const arbeitspreis = entry.netznutzungsentgelt.arbeitspreis_cent_per_kwh;
     const netzverlust = entry.netzverlustentgelt_cent_per_kwh;
 
-    // arbeitspreis/netzverlust can be a flat number or an object with SHT/SNT/WHT/WNT
-    const arb = typeof arbeitspreis === 'object' ? (arbeitspreis[tariff] ?? arbeitspreis.SHT) : arbeitspreis;
-    const net = typeof netzverlust === 'object' ? (netzverlust[tariff] ?? netzverlust.SHT) : netzverlust;
+    // arbeitspreis/netzverlust can be:
+    // - a flat number
+    // - seasonal format (2015-2025): { SHT, SNT, WHT, WNT }
+    // - simple format (2026+): { AP, SNAP } where SNAP = summer off-peak (Apr-Sep 10:00-16:00)
+    const arb = resolveRate(arbeitspreis, date);
+    const net = resolveRate(netzverlust, date);
 
     // Variable cost only (arbeitspreis + netzverlustentgelt), excluding fixed leistungspreis
     return arb + net;
